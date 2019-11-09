@@ -8,17 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRunDefaultWithoutArgs(t *testing.T) {
-	command := &Default{
-		Version:     "0.0.0",
-		Reader:      bytes.NewBufferString(""),
-		Writer:      ioutil.Discard,
-		ErrorWriter: ioutil.Discard,
-	}
-	code := command.Run([]string{})
-	assert.Equal(t, 0, code)
-}
-
 func TestRunDefaultWithVersionFlag(t *testing.T) {
 	expected := "0.0.0\n"
 

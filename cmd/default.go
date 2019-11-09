@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/naoty/task/tui"
 	"github.com/spf13/pflag"
 )
 
@@ -49,5 +50,16 @@ func (d *Default) Run(args []string) int {
 		return 0
 	}
 
+	err = d.startApplication()
+	if err != nil {
+		fmt.Fprintln(d.ErrorWriter, err.Error())
+		return 1
+	}
+
 	return 0
+}
+
+func (d *Default) startApplication() error {
+	app := tui.NewApplication()
+	return app.Start()
 }
