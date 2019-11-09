@@ -8,6 +8,7 @@ import (
 
 func main() {
 	command := &cmd.Default{
+		Version:     "0.0.0",
 		Reader:      os.Stdin,
 		Writer:      os.Stdout,
 		ErrorWriter: os.Stderr,
