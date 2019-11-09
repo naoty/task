@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRunWithoutArgs(t *testing.T) {
+func TestRunDefaultWithoutArgs(t *testing.T) {
 	command := &Default{
 		Reader:      bytes.NewBufferString(""),
 		Writer:      ioutil.Discard,
