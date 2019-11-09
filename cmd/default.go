@@ -3,9 +3,21 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
+
+var helpMessage = `
+Usage:
+  task
+  task -h | --help
+  task -v | --version
+
+Options
+  -h --help     Show this message.
+  -v --version  Show version.
+`
 
 // Default is the default command of this application.
 type Default struct {
@@ -18,12 +30,18 @@ type Default struct {
 // Run starts a default command with arguments.
 func (d *Default) Run(args []string) int {
 	flagset := pflag.NewFlagSet("", pflag.ContinueOnError)
+	helpFlag := flagset.BoolP("help", "h", false, "")
 	versionFlag := flagset.BoolP("version", "v", false, "")
 
 	err := flagset.Parse(args)
 	if err != nil {
 		fmt.Fprintln(d.ErrorWriter, err.Error())
 		return 1
+	}
+
+	if *helpFlag {
+		fmt.Fprintln(d.Writer, strings.Trim(helpMessage, "\n"))
+		return 0
 	}
 
 	if *versionFlag {
