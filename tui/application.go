@@ -15,17 +15,24 @@ func NewApplication() *Application {
 	resetStyles()
 
 	internal := tview.NewApplication()
-
-	// NOTE: Here is dummy code to demonstrate the application.
-	box := tview.NewBox().SetBorder(true).SetTitle("Hello, world!")
-	internal.SetRoot(box, true)
+	table := NewTable()
+	internal.SetRoot(table, true)
 
 	return &Application{internal}
 }
 
 // Start starts a TUI application.
 func (app *Application) Start() error {
+	app.clearDrawnColors()
 	return app.Run()
+}
+
+// https://github.com/rivo/tview/issues/270
+func (app *Application) clearDrawnColors() {
+	app.SetBeforeDrawFunc(func(s tcell.Screen) bool {
+		s.Clear()
+		return false
+	})
 }
 
 // resetStyles reset default styles for components.
