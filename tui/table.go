@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/gdamore/tcell"
+	"github.com/naoty/task/task"
 	"github.com/rivo/tview"
 )
 
@@ -14,14 +15,34 @@ type Table struct {
 func NewTable() *Table {
 	internal := tview.NewTable().
 		SetSelectable(true, false).
-		SetSelectedStyle(tcell.ColorDefault, tcell.Color239, tcell.AttrBold)
-
-	// NOTE: Here is dummy code to demonstrate the table view.
-	internal.
+		SetSelectedStyle(tcell.ColorDefault, tcell.Color239, tcell.AttrBold).
 		SetCell(0, 0, tview.NewTableCell("Done").SetSelectable(false)).
-		SetCell(0, 1, tview.NewTableCell("Title").SetSelectable(false).SetExpansion(1)).
-		SetCellSimple(1, 0, tview.Escape("[x]")).SetCell(1, 1, tview.NewTableCell("Start TUI application").SetExpansion(1)).
-		SetCellSimple(2, 0, "[ ]").SetCell(2, 1, tview.NewTableCell("Show tasks").SetExpansion(1))
+		SetCell(0, 1, tview.NewTableCell("Title").SetSelectable(false).SetExpansion(1))
 
 	return &Table{internal}
+}
+
+// Update replaces cells with new ones with passed tasks.
+func (t *Table) Update(tasks []task.Task) {
+	t.removeBodyRows()
+
+	for i, task := range tasks {
+		row := i + 1
+
+		if task.Done {
+			t.SetCellSimple(row, 0, tview.Escape("[x]"))
+		} else {
+			t.SetCellSimple(row, 0, "[ ]")
+		}
+
+		t.SetCell(row, 1, tview.NewTableCell(task.Title).SetExpansion(1))
+	}
+}
+
+// removeBody removes rows other than header.
+func (t *Table) removeBodyRows() {
+	rows := t.GetRowCount()
+	for i := 1; i < rows; i++ {
+		t.RemoveRow(i)
+	}
 }

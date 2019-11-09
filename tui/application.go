@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/gdamore/tcell"
+	"github.com/naoty/task/task"
 	"github.com/rivo/tview"
 )
 
@@ -15,7 +16,13 @@ func NewApplication() *Application {
 	resetStyles()
 
 	internal := tview.NewApplication()
+
 	table := NewTable()
+	table.Update([]task.Task{
+		task.New(1, "Start TUI application"),
+		task.New(2, "Show tasks"),
+	})
+
 	internal.SetRoot(table, true)
 
 	return &Application{internal}
