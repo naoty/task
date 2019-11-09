@@ -6,9 +6,11 @@ import (
 	"github.com/naoty/task/cmd"
 )
 
+var version = ""
+
 func main() {
 	command := &cmd.Default{
-		Version:     "0.0.0",
+		Version:     version,
 		Reader:      os.Stdin,
 		Writer:      os.Stdout,
 		ErrorWriter: os.Stderr,

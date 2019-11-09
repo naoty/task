@@ -1,5 +1,7 @@
+version := $$(git describe --tags)
+
 build: test
-	go build -o bin/task
+	go build -ldflags "-X main.version=$(version)" -o bin/task
 
 test:
 	go test ./...
