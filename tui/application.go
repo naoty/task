@@ -20,7 +20,7 @@ func NewApplication(store *task.Store) *Application {
 	internal := tview.NewApplication()
 
 	table := NewTable()
-	table.Update(store.Tasks)
+	table.SetTasks(store.Tasks)
 
 	internal.SetRoot(table, true)
 
@@ -32,17 +32,17 @@ func NewApplication(store *task.Store) *Application {
 
 // StartAutoReload starts a goroutine to reload TUI with tasks received from
 // passed channel.
-func (app *Application) StartAutoReload(tasksStream <-chan []task.Task) {
+func (app *Application) StartAutoReload(taskStream <-chan task.Task) {
 	go func() {
 		for {
 			select {
-			case tasks, ok := <-tasksStream:
+			case task, ok := <-taskStream:
 				if !ok {
 					return
 				}
 
 				app.QueueUpdateDraw(func() {
-					app.table.Update(tasks)
+					app.table.SetTask(task)
 				})
 			}
 		}

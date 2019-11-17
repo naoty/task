@@ -65,19 +65,15 @@ func (d *Default) startApplication() error {
 	store := task.NewStore()
 	app := tui.NewApplication(store)
 
-	tasksStream := make(chan []task.Task)
-	app.StartAutoReload(tasksStream)
+	taskStream := make(chan task.Task)
+	app.StartAutoReload(taskStream)
 
 	go func() {
-		defer close(tasksStream)
-		for {
-			select {
-			case <-time.After(3 * time.Second):
-				tasksStream <- []task.Task{
-					task.New(1, "updated"),
-				}
-				return
-			}
+		defer close(taskStream)
+		select {
+		case <-time.After(3 * time.Second):
+			taskStream <- task.New(1, "updated")
+			taskStream <- task.New(3, "new task")
 		}
 	}()
 

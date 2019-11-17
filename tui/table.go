@@ -9,6 +9,8 @@ import (
 // Table is the table view to show tasks.
 type Table struct {
 	*tview.Table
+
+	rows map[int][]*tview.TableCell
 }
 
 // NewTable initializes and returns a new Table.
@@ -19,30 +21,41 @@ func NewTable() *Table {
 		SetCell(0, 0, tview.NewTableCell("Done").SetSelectable(false)).
 		SetCell(0, 1, tview.NewTableCell("Title").SetSelectable(false).SetExpansion(1))
 
-	return &Table{internal}
-}
-
-// Update replaces cells with new ones with passed tasks.
-func (t *Table) Update(tasks []task.Task) {
-	t.removeBodyRows()
-
-	for i, task := range tasks {
-		row := i + 1
-
-		if task.Done {
-			t.SetCellSimple(row, 0, tview.Escape("[x]"))
-		} else {
-			t.SetCellSimple(row, 0, "[ ]")
-		}
-
-		t.SetCell(row, 1, tview.NewTableCell(task.Title).SetExpansion(1))
+	return &Table{
+		Table: internal,
+		rows:  map[int][]*tview.TableCell{},
 	}
 }
 
-// removeBody removes rows other than header.
-func (t *Table) removeBodyRows() {
-	rows := t.GetRowCount()
-	for i := 1; i < rows; i++ {
-		t.RemoveRow(i)
+// SetTask sets passed task to table.
+func (t *Table) SetTask(task task.Task) {
+	row, ok := t.rows[task.ID]
+
+	checkbox := "[ ]"
+	if task.Done {
+		checkbox = tview.Escape("[x]")
+	}
+
+	if ok {
+		row[0].SetText(checkbox)
+		row[1].SetText(task.Title)
+		return
+	}
+
+	nextRowNumber := t.GetRowCount()
+
+	checkboxCell := tview.NewTableCell(checkbox)
+	t.SetCell(nextRowNumber, 0, checkboxCell)
+
+	titleCell := tview.NewTableCell(task.Title).SetExpansion(1)
+	t.SetCell(nextRowNumber, 1, titleCell)
+
+	t.rows[task.ID] = []*tview.TableCell{checkboxCell, titleCell}
+}
+
+// SetTasks sets passed tasks to table.
+func (t *Table) SetTasks(tasks []task.Task) {
+	for _, task := range tasks {
+		t.SetTask(task)
 	}
 }
