@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/naoty/task/task"
 	"github.com/naoty/task/tui"
@@ -24,7 +23,8 @@ Options
 // Default is the default command of this application.
 type Default struct {
 	IO
-	Version string
+	Version    string
+	TaskStream <-chan task.Task
 }
 
 // Run starts a default command with arguments.
@@ -61,18 +61,7 @@ func (d *Default) Run(args []string) int {
 func (d *Default) startApplication() error {
 	store := task.NewStore()
 	app := tui.NewApplication(store)
-
-	taskStream := make(chan task.Task)
-	app.StartAutoReload(taskStream)
-
-	go func() {
-		defer close(taskStream)
-		select {
-		case <-time.After(3 * time.Second):
-			taskStream <- task.New(1, "updated")
-			taskStream <- task.New(3, "new task")
-		}
-	}()
+	app.StartAutoReload(d.TaskStream)
 
 	err := app.Start()
 	if err != nil {
