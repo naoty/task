@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/naoty/task/task"
 	"github.com/naoty/task/tui"
 	"github.com/spf13/pflag"
 )
@@ -60,6 +61,7 @@ func (d *Default) Run(args []string) int {
 }
 
 func (d *Default) startApplication() error {
-	app := tui.NewApplication()
+	store := task.NewStore()
+	app := tui.NewApplication(store)
 	return app.Start()
 }

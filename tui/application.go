@@ -12,16 +12,13 @@ type Application struct {
 }
 
 // NewApplication initializes and returns a new Application.
-func NewApplication() *Application {
+func NewApplication(store *task.Store) *Application {
 	resetStyles()
 
 	internal := tview.NewApplication()
 
 	table := NewTable()
-	table.Update([]task.Task{
-		task.New(1, "Start TUI application"),
-		task.New(2, "Show tasks"),
-	})
+	table.Update(store.Tasks)
 
 	internal.SetRoot(table, true)
 
