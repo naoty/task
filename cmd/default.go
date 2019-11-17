@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
@@ -24,10 +23,8 @@ Options
 
 // Default is the default command of this application.
 type Default struct {
-	Version     string
-	Reader      io.Reader
-	Writer      io.Writer
-	ErrorWriter io.Writer
+	IO
+	Version string
 }
 
 // Run starts a default command with arguments.

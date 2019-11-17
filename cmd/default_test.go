@@ -21,11 +21,14 @@ func TestRunDefaultWithVersionFlag(t *testing.T) {
 
 	for _, testcase := range testcases {
 		buf := bytes.NewBufferString("")
-		command := &Default{
-			Version:     "0.0.0",
+		dummyIO := IO{
 			Reader:      bytes.NewBufferString(""),
 			Writer:      buf,
 			ErrorWriter: ioutil.Discard,
+		}
+		command := &Default{
+			IO:      dummyIO,
+			Version: "0.0.0",
 		}
 		_ = command.Run([]string{testcase.in})
 		assert.Equal(t, expected, buf.String())

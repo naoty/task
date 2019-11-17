@@ -9,11 +9,14 @@ import (
 var version = ""
 
 func main() {
-	command := &cmd.Default{
-		Version:     version,
+	stdio := cmd.IO{
 		Reader:      os.Stdin,
 		Writer:      os.Stdout,
 		ErrorWriter: os.Stderr,
+	}
+	command := &cmd.Default{
+		IO:      stdio,
+		Version: version,
 	}
 	code := command.Run(os.Args[1:])
 	os.Exit(code)
