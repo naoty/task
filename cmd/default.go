@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/naoty/task/task"
 	"github.com/naoty/task/tui"
@@ -63,5 +64,27 @@ func (d *Default) Run(args []string) int {
 func (d *Default) startApplication() error {
 	store := task.NewStore()
 	app := tui.NewApplication(store)
-	return app.Start()
+
+	tasksStream := make(chan []task.Task)
+	app.StartAutoReload(tasksStream)
+
+	go func() {
+		defer close(tasksStream)
+		for {
+			select {
+			case <-time.After(3 * time.Second):
+				tasksStream <- []task.Task{
+					task.New(1, "updated"),
+				}
+				return
+			}
+		}
+	}()
+
+	err := app.Start()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

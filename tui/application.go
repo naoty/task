@@ -9,6 +9,8 @@ import (
 // Application is the entry point of TUI application.
 type Application struct {
 	*tview.Application
+
+	table *Table
 }
 
 // NewApplication initializes and returns a new Application.
@@ -22,7 +24,29 @@ func NewApplication(store *task.Store) *Application {
 
 	internal.SetRoot(table, true)
 
-	return &Application{internal}
+	return &Application{
+		Application: internal,
+		table:       table,
+	}
+}
+
+// StartAutoReload starts a goroutine to reload TUI with tasks received from
+// passed channel.
+func (app *Application) StartAutoReload(tasksStream <-chan []task.Task) {
+	go func() {
+		for {
+			select {
+			case tasks, ok := <-tasksStream:
+				if !ok {
+					return
+				}
+
+				app.QueueUpdateDraw(func() {
+					app.table.Update(tasks)
+				})
+			}
+		}
+	}()
 }
 
 // Start starts a TUI application.

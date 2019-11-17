@@ -8,9 +8,6 @@ type Store struct {
 // NewStore initializes and returns a new Store.
 func NewStore() *Store {
 	return &Store{
-		Tasks: []Task{
-			New(1, "Start TUI application"),
-			New(2, "Show tasks"),
-		},
+		Tasks: []Task{},
 	}
 }
