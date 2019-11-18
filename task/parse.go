@@ -4,7 +4,25 @@ import (
 	"bufio"
 	"bytes"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
+
+// Parse converts passed text into a task.
+func Parse(text string) (Task, error) {
+	frontMatter, _, err := splitFrontMatter(text)
+	if err != nil {
+		return Task{}, err
+	}
+
+	task := Task{}
+	err = yaml.Unmarshal([]byte(frontMatter), &task)
+	if err != nil {
+		return Task{}, err
+	}
+
+	return task, nil
+}
 
 func splitFrontMatter(text string) (string, string, error) {
 	scanner := bufio.NewScanner(bytes.NewBufferString(text))

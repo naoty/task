@@ -5,6 +5,20 @@ import (
 	"testing"
 )
 
+func TestParse(t *testing.T) {
+	testcases := []struct {
+		in  string
+		out Task
+	}{
+		{"---\ntitle: dummy\n---\n\ndummy", Task{Title: "dummy", Done: false}},
+	}
+
+	for _, testcase := range testcases {
+		task, _ := Parse(testcase.in)
+		assert.Equal(t, testcase.out, task)
+	}
+}
+
 func TestSplitFrontMatter(t *testing.T) {
 	testcases := []struct {
 		in          string
