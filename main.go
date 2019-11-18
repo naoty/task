@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"time"
 
 	"github.com/naoty/task/cmd"
 	"github.com/naoty/task/task"
@@ -21,16 +21,17 @@ func main() {
 }
 
 func runDefault(io cmd.IO) int {
-	taskStream := make(chan task.Task)
-	defer close(taskStream)
+	watcher, err := NewWatcher()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return 1
+	}
+	defer watcher.Close()
 
-	go func() {
-		select {
-		case <-time.After(3 * time.Second):
-			taskStream <- task.New(1, "updated")
-			taskStream <- task.New(3, "new task")
-		}
-	}()
+	fileInfoStream := watcher.Start()
+	watcher.Watch("./examples")
+
+	taskStream := task.Pipeline(fileInfoStream)
 
 	command := &cmd.Default{
 		IO:         io,
