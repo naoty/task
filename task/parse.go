@@ -3,25 +3,39 @@ package task
 import (
 	"bufio"
 	"bytes"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 )
 
 // Parse converts passed text into a task.
-func Parse(text string) (Task, error) {
-	frontMatter, _, err := splitFrontMatter(text)
+func Parse(file FileInfo) (Task, error) {
+	frontMatter, _, err := splitFrontMatter(file.Content)
 	if err != nil {
 		return Task{}, err
 	}
 
-	task := Task{}
+	id, err := parseID(file.Path)
+	if err != nil {
+		return Task{}, err
+	}
+
+	task := Task{ID: id}
 	err = yaml.Unmarshal([]byte(frontMatter), &task)
 	if err != nil {
 		return Task{}, err
 	}
 
 	return task, nil
+}
+
+func parseID(path string) (int, error) {
+	basename := filepath.Base(path)
+	extension := filepath.Ext(path)
+	id := strings.TrimRight(basename, extension)
+	return strconv.Atoi(id)
 }
 
 func splitFrontMatter(text string) (string, string, error) {

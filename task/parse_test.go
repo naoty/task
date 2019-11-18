@@ -7,10 +7,13 @@ import (
 
 func TestParse(t *testing.T) {
 	testcases := []struct {
-		in  string
+		in  FileInfo
 		out Task
 	}{
-		{"---\ntitle: dummy\n---\n\ndummy", Task{Title: "dummy", Done: false}},
+		{
+			in:  FileInfo{Content: "---\ntitle: dummy\n---\n\ndummy", Path: "examples/100.md"},
+			out: Task{ID: 100, Title: "dummy", Done: false},
+		},
 	}
 
 	for _, testcase := range testcases {
