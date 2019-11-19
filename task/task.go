@@ -5,6 +5,7 @@ type Task struct {
 	ID    int
 	Title string
 	Done  bool
+	Body  string
 }
 
 // New returns a new Task with passed id and title.
@@ -13,5 +14,6 @@ func New(id int, title string) Task {
 		ID:    id,
 		Title: title,
 		Done:  false,
+		Body:  "",
 	}
 }

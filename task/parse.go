@@ -31,7 +31,7 @@ func Pipeline(fileStream <-chan FileInfo) <-chan Task {
 
 // Parse converts passed text into a task.
 func Parse(file FileInfo) (Task, error) {
-	frontMatter, _, err := splitFrontMatter(file.Content)
+	frontMatter, body, err := splitFrontMatter(file.Content)
 	if err != nil {
 		return Task{}, err
 	}
@@ -41,7 +41,7 @@ func Parse(file FileInfo) (Task, error) {
 		return Task{}, err
 	}
 
-	task := Task{ID: id}
+	task := Task{ID: id, Body: body}
 	err = yaml.Unmarshal([]byte(frontMatter), &task)
 	if err != nil {
 		return Task{}, err

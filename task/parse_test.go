@@ -12,7 +12,7 @@ func TestParse(t *testing.T) {
 	}{
 		{
 			in:  FileInfo{Content: "---\ntitle: dummy\n---\n\ndummy", Path: "examples/100.md"},
-			out: Task{ID: 100, Title: "dummy", Done: false},
+			out: Task{ID: 100, Title: "dummy", Done: false, Body: "dummy"},
 		},
 	}
 
