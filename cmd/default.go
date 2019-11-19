@@ -24,6 +24,7 @@ Options
 type Default struct {
 	IO
 	Version    string
+	Store      *task.Store
 	TaskStream <-chan task.Task
 }
 
@@ -59,8 +60,7 @@ func (d *Default) Run(args []string) int {
 }
 
 func (d *Default) startApplication() error {
-	store := task.NewStore()
-	app := tui.NewApplication(store)
+	app := tui.NewApplication(d.Store)
 	app.StartAutoReload(d.TaskStream)
 
 	err := app.Start()
