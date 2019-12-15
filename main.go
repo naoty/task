@@ -38,6 +38,12 @@ func runDefault(io cmd.IO) int {
 		return 1
 	}
 
+	err = ensureDirExist(dir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return 1
+	}
+
 	store, err := loadTasks(dir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -71,6 +77,19 @@ func tasksDir() (string, error) {
 	}
 
 	return dir, nil
+}
+
+func ensureDirExist(dir string) error {
+	if _, err := os.Stat(dir); os.IsExist(err) {
+		return nil
+	}
+
+	err := os.Mkdir(dir, 0755)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func loadTasks(dir string) (*task.Store, error) {
