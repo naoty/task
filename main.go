@@ -38,7 +38,7 @@ func runDefault(io cmd.IO) int {
 	}
 
 	fileInfoStream := watcher.Start()
-	watcher.Watch("./examples")
+	watcher.WatchDir("./examples")
 
 	taskStream := task.Pipeline(fileInfoStream)
 

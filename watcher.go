@@ -38,6 +38,15 @@ func (watcher *Watcher) Start() <-chan task.FileInfo {
 					return
 				}
 
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					watcher.watchFile(event.Name)
+				}
+
+				if event.Op&fsnotify.Remove == fsnotify.Remove {
+					watcher.Remove(event.Name)
+					continue
+				}
+
 				content, _ := ioutil.ReadFile(event.Name)
 				if len(content) == 0 {
 					continue
@@ -57,20 +66,32 @@ func (watcher *Watcher) Start() <-chan task.FileInfo {
 	return fileInfoStream
 }
 
-// Watch adds files under passed dir to targets.
-func (watcher *Watcher) Watch(dir string) error {
-	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+// WatchDir adds passed dir and files to targets.
+func (watcher *Watcher) WatchDir(dir string) error {
+	err := watcher.Add(dir)
+	if err != nil {
+		return err
+	}
+
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if info.IsDir() || !strings.HasSuffix(path, ".md") {
+		if info.IsDir() {
 			return nil
 		}
 
-		err = watcher.Add(path)
-		return err
+		return watcher.watchFile(path)
 	})
 
-	return nil
+	return err
+}
+
+func (watcher *Watcher) watchFile(path string) error {
+	if !strings.HasSuffix(path, ".md") {
+		return nil
+	}
+
+	return watcher.Add(path)
 }
