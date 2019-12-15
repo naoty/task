@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,14 +32,20 @@ func runDefault(io cmd.IO) int {
 	}
 	defer watcher.Close()
 
-	store, err := loadTasks("./examples")
+	dir, err := tasksDir()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return 1
+	}
+
+	store, err := loadTasks(dir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return 1
 	}
 
 	fileInfoStream := watcher.Start()
-	watcher.WatchDir("./examples")
+	watcher.WatchDir(dir)
 
 	taskStream := task.Pipeline(fileInfoStream)
 
@@ -50,6 +57,20 @@ func runDefault(io cmd.IO) int {
 	}
 	code := command.Run(os.Args[1:])
 	return code
+}
+
+func tasksDir() (string, error) {
+	dir := os.Getenv("TASK_PATH")
+	if dir == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			return "", err
+		}
+
+		dir = filepath.Join(home, ".tasks")
+	}
+
+	return dir, nil
 }
 
 func loadTasks(dir string) (*task.Store, error) {
