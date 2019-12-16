@@ -80,11 +80,17 @@ func tasksDir() (string, error) {
 }
 
 func ensureDirExist(dir string) error {
-	if _, err := os.Stat(dir); os.IsExist(err) {
+	info, err := os.Stat(dir)
+
+	if os.IsExist(err) {
 		return nil
 	}
 
-	err := os.Mkdir(dir, 0755)
+	if info.IsDir() {
+		return nil
+	}
+
+	err = os.Mkdir(dir, 0755)
 	if err != nil {
 		return err
 	}
