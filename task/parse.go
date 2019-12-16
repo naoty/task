@@ -10,25 +10,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Pipeline returns a channel sending tasks converted from received files.
-func Pipeline(fileStream <-chan FileInfo) <-chan Task {
-	taskStream := make(chan Task)
-	go func() {
-		defer close(taskStream)
-		for {
-			select {
-			case file, ok := <-fileStream:
-				if !ok {
-					return
-				}
-				task, _ := Parse(file)
-				taskStream <- task
-			}
-		}
-	}()
-	return taskStream
-}
-
 // Parse converts passed text into a task.
 func Parse(file FileInfo) (Task, error) {
 	frontMatter, body, err := splitFrontMatter(file.Content)

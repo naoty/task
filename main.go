@@ -49,11 +49,12 @@ func runDefault(io cmd.IO) int {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return 1
 	}
+	defer store.Close()
 
 	fileInfoStream := watcher.Start()
 	watcher.WatchDir(dir)
 
-	taskStream := task.Pipeline(fileInfoStream)
+	taskStream := store.SaveFrom(fileInfoStream)
 
 	command := &cmd.Default{
 		IO:         io,
