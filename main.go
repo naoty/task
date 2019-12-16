@@ -121,7 +121,7 @@ func loadTasks(dir string) (*task.Store, error) {
 			return err
 		}
 
-		store.Tasks = append(store.Tasks, task)
+		store.Save(task)
 
 		return err
 	})

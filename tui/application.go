@@ -20,7 +20,7 @@ func NewApplication(store *task.Store) *Application {
 	internal := tview.NewApplication()
 
 	table := NewTable()
-	table.SetTasks(store.Tasks)
+	table.SetTasks(store.List())
 
 	internal.SetRoot(table, true)
 

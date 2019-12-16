@@ -2,15 +2,14 @@ package task
 
 // Store is where tasks are managed.
 type Store struct {
-	Tasks []Task
-
+	tasks      map[int]Task
 	taskStream chan Task
 }
 
 // NewStore initializes and returns a new Store.
 func NewStore() *Store {
 	return &Store{
-		Tasks:      []Task{},
+		tasks:      map[int]Task{},
 		taskStream: make(chan Task),
 	}
 }
@@ -18,6 +17,20 @@ func NewStore() *Store {
 // Close closes internal channels.
 func (s *Store) Close() {
 	close(s.taskStream)
+}
+
+// List returns a saved tasks.
+func (s *Store) List() []Task {
+	list := []Task{}
+	for _, task := range s.tasks {
+		list = append(list, task)
+	}
+	return list
+}
+
+// Save save a passed task into store.
+func (s *Store) Save(task Task) {
+	s.tasks[task.ID] = task
 }
 
 // SaveFrom starts a goroutine saving tasks generated from FileInfo and
