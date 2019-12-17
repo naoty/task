@@ -87,7 +87,7 @@ func ensureDirExist(dir string) error {
 		return nil
 	}
 
-	if info.IsDir() {
+	if info != nil && info.IsDir() {
 		return nil
 	}
 
