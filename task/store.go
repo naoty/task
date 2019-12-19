@@ -46,8 +46,7 @@ func (s *Store) SaveFrom(fileInfoStream <-chan FileInfo) <-chan Task {
 				}
 
 				task, _ := Parse(info)
-
-				// TODO: save a task into store.
+				s.tasks[task.ID] = task
 
 				stream <- task
 			}
