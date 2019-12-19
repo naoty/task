@@ -52,13 +52,12 @@ func runDefault(io cmd.IO) int {
 
 	watcher.Start()
 	watcher.WatchDir(dir)
-	taskStream := store.SaveFrom(watcher.FileInfoStream)
+	store.SaveFrom(watcher.FileInfoStream)
 
 	command := &cmd.Default{
-		IO:         io,
-		Version:    version,
-		Store:      store,
-		TaskStream: taskStream,
+		IO:      io,
+		Version: version,
+		Store:   store,
 	}
 	code := command.Run(os.Args[1:])
 	return code

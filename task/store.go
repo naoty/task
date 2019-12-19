@@ -2,21 +2,36 @@ package task
 
 // Store is where tasks are managed.
 type Store struct {
-	tasks      map[int]Task
-	taskStream chan Task
+	tasks       map[int]Task
+	EventStream chan Event
 }
+
+// Event represents an event for Store.
+type Event struct {
+	Task *Task
+	Op   Op
+}
+
+// Op represents an operation to tasks.
+type Op int
+
+// These values represent operations to tasks.
+const (
+	Create Op = 1 << iota
+	Update
+)
 
 // NewStore initializes and returns a new Store.
 func NewStore() *Store {
 	return &Store{
-		tasks:      map[int]Task{},
-		taskStream: make(chan Task),
+		tasks:       map[int]Task{},
+		EventStream: make(chan Event),
 	}
 }
 
 // Close closes internal channels.
 func (s *Store) Close() {
-	close(s.taskStream)
+	close(s.EventStream)
 }
 
 // List returns a saved tasks.
@@ -28,15 +43,9 @@ func (s *Store) List() []Task {
 	return list
 }
 
-// Save save a passed task into store.
-func (s *Store) Save(task Task) {
-	s.tasks[task.ID] = task
-}
-
 // SaveFrom starts a goroutine saving tasks generated from FileInfo and
-// returns a channel where saved tasks pass through.
-func (s *Store) SaveFrom(fileInfoStream <-chan FileInfo) <-chan Task {
-	stream := make(chan Task)
+// returns a channel where events pass through.
+func (s *Store) SaveFrom(fileInfoStream <-chan FileInfo) {
 	go func() {
 		for {
 			select {
@@ -45,12 +54,23 @@ func (s *Store) SaveFrom(fileInfoStream <-chan FileInfo) <-chan Task {
 					return
 				}
 
-				task, _ := Parse(info)
-				s.tasks[task.ID] = task
-
-				stream <- task
+				newTask, _ := Parse(info)
+				s.save(newTask)
 			}
 		}
 	}()
-	return stream
+}
+
+func (s *Store) save(task Task) {
+	old, ok := s.tasks[task.ID]
+
+	if !ok {
+		s.tasks[task.ID] = task
+		s.EventStream <- Event{Task: &task, Op: Create}
+	}
+
+	if ok && old != task {
+		s.tasks[task.ID] = task
+		s.EventStream <- Event{Task: &task, Op: Update}
+	}
 }

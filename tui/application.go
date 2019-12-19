@@ -32,17 +32,17 @@ func NewApplication(store *task.Store) *Application {
 
 // StartAutoReload starts a goroutine to reload TUI with tasks received from
 // passed channel.
-func (app *Application) StartAutoReload(taskStream <-chan task.Task) {
+func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 	go func() {
 		for {
 			select {
-			case task, ok := <-taskStream:
+			case event, ok := <-eventStream:
 				if !ok {
 					return
 				}
 
 				app.QueueUpdateDraw(func() {
-					app.table.SetTask(task)
+					app.table.SetTask(*event.Task)
 				})
 			}
 		}
