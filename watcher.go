@@ -13,6 +13,8 @@ import (
 // Watcher watches changes of files.
 type Watcher struct {
 	*fsnotify.Watcher
+
+	FileInfoStream chan task.FileInfo
 }
 
 // NewWatcher initializes and returns a new Watcher.
@@ -22,15 +24,22 @@ func NewWatcher() (*Watcher, error) {
 		return nil, err
 	}
 
-	return &Watcher{internal}, nil
+	return &Watcher{
+		Watcher:        internal,
+		FileInfoStream: make(chan task.FileInfo),
+	}, nil
+}
+
+// Close closes internal channels.
+func (watcher *Watcher) Close() {
+	watcher.Watcher.Close()
+	close(watcher.FileInfoStream)
 }
 
 // Start starts a goroutine to watch changes of files and send the contents of
 // them to returned channel.
-func (watcher *Watcher) Start() <-chan task.FileInfo {
-	fileInfoStream := make(chan task.FileInfo)
+func (watcher *Watcher) Start() {
 	go func() {
-		defer close(fileInfoStream)
 		for {
 			select {
 			case event, ok := <-watcher.Events:
@@ -52,7 +61,7 @@ func (watcher *Watcher) Start() <-chan task.FileInfo {
 					continue
 				}
 
-				fileInfoStream <- task.FileInfo{
+				watcher.FileInfoStream <- task.FileInfo{
 					Content: string(content),
 					Path:    event.Name,
 				}
@@ -63,7 +72,6 @@ func (watcher *Watcher) Start() <-chan task.FileInfo {
 			}
 		}
 	}()
-	return fileInfoStream
 }
 
 // WatchDir adds passed dir and files to targets.
@@ -92,6 +100,20 @@ func (watcher *Watcher) watchFile(path string) error {
 	if !strings.HasSuffix(path, ".md") {
 		return nil
 	}
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	// asynchronously send FileInfos to prevent main goroutine
+	// from waiting until TUI receives FileInfos from this channel.
+	go func() {
+		watcher.FileInfoStream <- task.FileInfo{
+			Content: string(content),
+			Path:    path,
+		}
+	}()
 
 	return watcher.Add(path)
 }

@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/mitchellh/go-homedir"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/mitchellh/go-homedir"
 
 	"github.com/naoty/task/cmd"
 	"github.com/naoty/task/task"
@@ -44,17 +43,16 @@ func runDefault(io cmd.IO) int {
 		return 1
 	}
 
-	store, err := loadTasks(dir)
+	store := task.NewStore()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return 1
 	}
 	defer store.Close()
 
-	fileInfoStream := watcher.Start()
+	watcher.Start()
 	watcher.WatchDir(dir)
-
-	taskStream := store.SaveFrom(fileInfoStream)
+	taskStream := store.SaveFrom(watcher.FileInfoStream)
 
 	command := &cmd.Default{
 		IO:         io,
@@ -97,38 +95,4 @@ func ensureDirExist(dir string) error {
 	}
 
 	return nil
-}
-
-func loadTasks(dir string) (*task.Store, error) {
-	store := task.NewStore()
-
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() || !strings.HasSuffix(path, ".md") {
-			return nil
-		}
-
-		content, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		task, err := task.Parse(task.FileInfo{Content: string(content), Path: path})
-		if err != nil {
-			return err
-		}
-
-		store.Save(task)
-
-		return err
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return store, nil
 }
