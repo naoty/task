@@ -20,9 +20,14 @@ func NewApplication(store *task.Store) *Application {
 	internal := tview.NewApplication()
 
 	table := NewTable()
+
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(table, 0, 1, true)
+
 	table.SetTasks(store.List())
 
-	internal.SetRoot(table, true)
+	internal.SetRoot(flex, true)
 
 	return &Application{
 		Application: internal,
