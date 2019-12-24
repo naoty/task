@@ -10,7 +10,8 @@ import (
 type Table struct {
 	*tview.Table
 
-	rows map[int][]*tview.TableCell
+	rows  map[int][]*tview.TableCell
+	tasks map[int]task.Task
 }
 
 // NewTable initializes and returns a new Table.
@@ -24,6 +25,7 @@ func NewTable() *Table {
 	return &Table{
 		Table: internal,
 		rows:  map[int][]*tview.TableCell{},
+		tasks: map[int]task.Task{},
 	}
 }
 
@@ -51,6 +53,7 @@ func (t *Table) SetTask(task task.Task) {
 	t.SetCell(nextRowNumber, 1, titleCell)
 
 	t.rows[task.ID] = []*tview.TableCell{checkboxCell, titleCell}
+	t.tasks[nextRowNumber] = task
 }
 
 // SetTasks sets passed tasks to table.
@@ -58,4 +61,16 @@ func (t *Table) SetTasks(tasks []task.Task) {
 	for _, task := range tasks {
 		t.SetTask(task)
 	}
+}
+
+// SetSelectedFunc sets a function invoked with selected task when selection.
+func (t *Table) SetSelectedFunc(f func(t task.Task)) {
+	t.Table.SetSelectedFunc(func(row, column int) {
+		task, ok := t.tasks[row]
+		if !ok {
+			return
+		}
+
+		f(task)
+	})
 }

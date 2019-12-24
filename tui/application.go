@@ -20,12 +20,18 @@ func NewApplication(store *task.Store) *Application {
 	internal := tview.NewApplication()
 
 	table := NewTable()
+	note := NewNote()
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(table, 0, 1, true)
 
 	table.SetTasks(store.List())
+
+	table.SetSelectedFunc(func(task task.Task) {
+		note.SetText(task.Body)
+		flex.AddItem(note, 0, 1, false)
+	})
 
 	internal.SetRoot(flex, true)
 
