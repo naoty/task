@@ -10,7 +10,10 @@ import (
 type Application struct {
 	*tview.Application
 
-	table *Table
+	flex     *tview.Flex
+	table    *Table
+	note     *Note
+	selected bool
 }
 
 // NewApplication initializes and returns a new Application.
@@ -28,16 +31,14 @@ func NewApplication(store *task.Store) *Application {
 
 	table.SetTasks(store.List())
 
-	table.SetSelectedFunc(func(task task.Task) {
-		note.SetText(task.Body)
-		flex.AddItem(note, 0, 1, false)
-	})
-
 	internal.SetRoot(flex, true)
 
 	return &Application{
 		Application: internal,
+		flex:        flex,
 		table:       table,
+		note:        note,
+		selected:    false,
 	}
 }
 
@@ -63,6 +64,19 @@ func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 // Start starts a TUI application.
 func (app *Application) Start() error {
 	app.clearDrawnColors()
+
+	app.table.SetSelectedFunc(func(task task.Task) {
+		if app.selected {
+			app.flex.RemoveItem(app.note)
+			app.note.SetText("")
+			app.selected = false
+		} else {
+			app.note.SetText(task.Body)
+			app.flex.AddItem(app.note, 0, 1, false)
+			app.selected = true
+		}
+	})
+
 	return app.Run()
 }
 
