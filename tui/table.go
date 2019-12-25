@@ -74,3 +74,16 @@ func (t *Table) SetSelectedFunc(f func(t task.Task)) {
 		f(task)
 	})
 }
+
+// SetSelectionChangedFunc sets a function invoked with selected task when
+// selection is changed.
+func (t *Table) SetSelectionChangedFunc(f func(t task.Task)) {
+	t.Table.SetSelectionChangedFunc(func(row, column int) {
+		task, ok := t.tasks[row]
+		if !ok {
+			return
+		}
+
+		f(task)
+	})
+}

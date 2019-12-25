@@ -81,6 +81,12 @@ func (app *Application) Start() error {
 		}
 	})
 
+	app.table.SetSelectionChangedFunc(func(task task.Task) {
+		if app.selected {
+			app.note.SetText(task.Body)
+		}
+	})
+
 	return app.Run()
 }
 
