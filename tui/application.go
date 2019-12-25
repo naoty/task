@@ -16,6 +16,10 @@ type Application struct {
 	selected bool
 }
 
+// VisibleTaskNumber represents a number of visible tasks when a note is
+// displayed.
+var VisibleTaskNumber = 5
+
 // NewApplication initializes and returns a new Application.
 func NewApplication(store *task.Store) *Application {
 	resetStyles()
@@ -27,7 +31,7 @@ func NewApplication(store *task.Store) *Application {
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(table, 0, 1, true)
+		AddItem(table, VisibleTaskNumber+1, 0, true)
 
 	table.SetTasks(store.List())
 
