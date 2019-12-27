@@ -62,7 +62,7 @@ func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 				app.QueueUpdateDraw(func() {
 					app.table.SetTask(task)
 
-					if app.selectedTask != nil && app.selectedTask == &task {
+					if app.selectedTask != nil && (*app.selectedTask).ID == task.ID {
 						app.note.SetText(task.Body)
 					}
 				})
