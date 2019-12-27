@@ -29,8 +29,6 @@ func NewApplication(store *task.Store) *Application {
 		SetDirection(tview.FlexRow).
 		AddItem(table, 0, 1, true)
 
-	table.SetTasks(store.List())
-
 	internal.SetRoot(flex, true)
 
 	return &Application{

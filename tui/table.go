@@ -69,13 +69,6 @@ func (t *Table) updateTask(task task.Task) {
 	}
 }
 
-// SetTasks sets passed tasks to table.
-func (t *Table) SetTasks(tasks []task.Task) {
-	for _, task := range tasks {
-		t.SetTask(task)
-	}
-}
-
 // SetSelectedFunc sets a function invoked with selected task when selection.
 func (t *Table) SetSelectedFunc(f func(t task.Task)) {
 	t.Table.SetSelectedFunc(func(row, column int) {
