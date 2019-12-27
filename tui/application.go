@@ -14,6 +14,7 @@ type Application struct {
 	table        *Table
 	note         *Note
 	selectedTask *task.Task
+	noteVisible  bool
 }
 
 // NewApplication initializes and returns a new Application.
@@ -37,6 +38,7 @@ func NewApplication(store *task.Store) *Application {
 		table:        table,
 		note:         note,
 		selectedTask: nil,
+		noteVisible:  false,
 	}
 }
 
@@ -70,21 +72,22 @@ func (app *Application) Start() error {
 	app.clearDrawnColors()
 
 	app.table.SetSelectedFunc(func(task task.Task) {
-		if app.selectedTask != nil {
+		if app.noteVisible {
 			app.flex.RemoveItem(app.note)
 			app.note.SetText("")
-			app.selectedTask = nil
+			app.noteVisible = false
 		} else {
-			app.note.SetText(task.Body)
+			app.note.SetText((*app.selectedTask).Body)
 			app.flex.AddItem(app.note, 0, 2, false)
-			app.selectedTask = &task
+			app.noteVisible = true
 		}
 	})
 
 	app.table.SetSelectionChangedFunc(func(task task.Task) {
-		if app.selectedTask != nil {
-			app.selectedTask = &task
-			app.note.SetText(task.Body)
+		app.selectedTask = &task
+
+		if app.noteVisible {
+			app.note.SetText((*app.selectedTask).Body)
 		}
 	})
 
