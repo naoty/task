@@ -10,7 +10,10 @@ import (
 type Table struct {
 	*tview.Table
 
-	rows  map[int][]*tview.TableCell
+	// rows indexed by task id
+	rows map[int][]*tview.TableCell
+
+	// tasks indexed by row number
 	tasks map[int]task.Task
 }
 
