@@ -10,10 +10,10 @@ import (
 type Application struct {
 	*tview.Application
 
-	flex     *tview.Flex
-	table    *Table
-	note     *Note
-	selected bool
+	flex           *tview.Flex
+	table          *Table
+	note           *Note
+	selectedTaskID *int
 }
 
 // NewApplication initializes and returns a new Application.
@@ -34,11 +34,11 @@ func NewApplication(store *task.Store) *Application {
 	internal.SetRoot(flex, true)
 
 	return &Application{
-		Application: internal,
-		flex:        flex,
-		table:       table,
-		note:        note,
-		selected:    false,
+		Application:    internal,
+		flex:           flex,
+		table:          table,
+		note:           note,
+		selectedTaskID: nil,
 	}
 }
 
@@ -53,9 +53,14 @@ func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 					return
 				}
 
+				task := *event.Task
+
 				app.QueueUpdateDraw(func() {
-					app.table.SetTask(*event.Task)
-					app.note.SetText((*event.Task).Body)
+					app.table.SetTask(task)
+
+					if app.selectedTaskID != nil && *app.selectedTaskID == task.ID {
+						app.note.SetText(task.Body)
+					}
 				})
 			}
 		}
@@ -67,19 +72,20 @@ func (app *Application) Start() error {
 	app.clearDrawnColors()
 
 	app.table.SetSelectedFunc(func(task task.Task) {
-		if app.selected {
+		if app.selectedTaskID != nil {
 			app.flex.RemoveItem(app.note)
 			app.note.SetText("")
-			app.selected = false
+			app.selectedTaskID = nil
 		} else {
 			app.note.SetText(task.Body)
 			app.flex.AddItem(app.note, 0, 2, false)
-			app.selected = true
+			app.selectedTaskID = &task.ID
 		}
 	})
 
 	app.table.SetSelectionChangedFunc(func(task task.Task) {
-		if app.selected {
+		if app.selectedTaskID != nil {
+			app.selectedTaskID = &task.ID
 			app.note.SetText(task.Body)
 		}
 	})
