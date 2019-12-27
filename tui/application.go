@@ -81,6 +81,10 @@ func (app *Application) Start() error {
 	app.clearDrawnColors()
 
 	app.table.SetSelectedFunc(func(task task.Task) {
+		if app.selectedTask == nil {
+			app.selectedTask = &task
+		}
+
 		if app.noteVisible {
 			app.flex.RemoveItem(app.note)
 			app.note.SetText("")
