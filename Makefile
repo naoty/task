@@ -5,3 +5,6 @@ build: test
 
 test:
 	go test ./...
+
+install: build
+	cp bin/task ${GOPATH}/bin/task
