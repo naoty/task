@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/mitchellh/go-homedir"
@@ -58,6 +59,9 @@ func runDefault(io cmd.IO) int {
 		IO:      io,
 		Version: version,
 		Store:   store,
+		OpenHandler: func(path string) {
+			openTaskEditor(path)
+		},
 	}
 	code := command.Run(os.Args[1:])
 	return code
@@ -94,4 +98,14 @@ func ensureDirExist(dir string) error {
 	}
 
 	return nil
+}
+
+func openTaskEditor(filepath string) error {
+	path := os.Getenv("TASK_EDITOR")
+	if path == "" {
+		path = os.Getenv("EDITOR")
+	}
+
+	cmd := exec.Command(path, filepath)
+	return cmd.Run()
 }

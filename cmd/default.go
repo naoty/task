@@ -23,8 +23,9 @@ Options
 // Default is the default command of this application.
 type Default struct {
 	IO
-	Version string
-	Store   *task.Store
+	Version     string
+	Store       *task.Store
+	OpenHandler func(path string)
 }
 
 // Run starts a default command with arguments.
@@ -61,6 +62,7 @@ func (d *Default) Run(args []string) int {
 func (d *Default) startApplication() error {
 	app := tui.NewApplication(d.Store)
 	app.StartAutoReload(d.Store.EventStream)
+	app.SetOpenHandler(d.OpenHandler)
 
 	err := app.Start()
 	if err != nil {

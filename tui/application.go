@@ -13,7 +13,9 @@ type Application struct {
 	flex         *tview.Flex
 	table        *Table
 	note         *Note
+	store        *task.Store
 	selectedTask *task.Task
+	openHandler  func(path string)
 	noteVisible  bool
 }
 
@@ -37,7 +39,9 @@ func NewApplication(store *task.Store) *Application {
 		flex:         flex,
 		table:        table,
 		note:         note,
+		store:        store,
 		selectedTask: nil,
+		openHandler:  nil,
 		noteVisible:  false,
 	}
 }
@@ -67,6 +71,11 @@ func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 	}()
 }
 
+// SetOpenHandler sets a function to handle open event with file path.
+func (app *Application) SetOpenHandler(handler func(string)) {
+	app.openHandler = handler
+}
+
 // Start starts a TUI application.
 func (app *Application) Start() error {
 	app.clearDrawnColors()
@@ -89,6 +98,25 @@ func (app *Application) Start() error {
 		if app.noteVisible {
 			app.note.SetText((*app.selectedTask).Body)
 		}
+	})
+
+	app.table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyRune && event.Rune() == 'o' {
+			if app.selectedTask == nil {
+				return event
+			}
+
+			path, ok := app.store.LookupPath((*app.selectedTask).ID)
+			if !ok {
+				return event
+			}
+
+			if app.openHandler != nil {
+				app.openHandler(path)
+			}
+		}
+
+		return event
 	})
 
 	return app.Run()
