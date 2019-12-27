@@ -41,6 +41,7 @@ func (t *Table) SetTask(task task.Task) {
 	if ok {
 		row[0].SetText(checkbox)
 		row[1].SetText(task.Title)
+		t.updateTask(task)
 		return
 	}
 
@@ -54,6 +55,15 @@ func (t *Table) SetTask(task task.Task) {
 
 	t.rows[task.ID] = []*tview.TableCell{checkboxCell, titleCell}
 	t.tasks[nextRowNumber] = task
+}
+
+func (t *Table) updateTask(task task.Task) {
+	for row, _task := range t.tasks {
+		if _task.ID == task.ID {
+			t.tasks[row] = task
+			return
+		}
+	}
 }
 
 // SetTasks sets passed tasks to table.
