@@ -10,11 +10,10 @@ import (
 type Table struct {
 	*tview.Table
 
+	tasks []task.Task
+
 	// rows indexed by task id
 	rows map[int][]*tview.TableCell
-
-	// tasks indexed by row number
-	tasks map[int]task.Task
 }
 
 // NewTable initializes and returns a new Table.
@@ -27,8 +26,8 @@ func NewTable() *Table {
 
 	return &Table{
 		Table: internal,
+		tasks: []task.Task{},
 		rows:  map[int][]*tview.TableCell{},
-		tasks: map[int]task.Task{},
 	}
 }
 
@@ -57,13 +56,13 @@ func (t *Table) SetTask(task task.Task) {
 	t.SetCell(nextRowNumber, 1, titleCell)
 
 	t.rows[task.ID] = []*tview.TableCell{checkboxCell, titleCell}
-	t.tasks[nextRowNumber] = task
+	t.tasks = append(t.tasks, task)
 }
 
 func (t *Table) updateTask(task task.Task) {
-	for row, _task := range t.tasks {
+	for i, _task := range t.tasks {
 		if _task.ID == task.ID {
-			t.tasks[row] = task
+			t.tasks[i] = task
 			return
 		}
 	}
@@ -72,12 +71,11 @@ func (t *Table) updateTask(task task.Task) {
 // SetSelectedFunc sets a function invoked with selected task when selection.
 func (t *Table) SetSelectedFunc(f func(t task.Task)) {
 	t.Table.SetSelectedFunc(func(row, column int) {
-		task, ok := t.tasks[row]
-		if !ok {
+		if row-1 >= len(t.tasks) || row-1 < 0 {
 			return
 		}
 
-		f(task)
+		f(t.tasks[row-1])
 	})
 }
 
@@ -85,11 +83,10 @@ func (t *Table) SetSelectedFunc(f func(t task.Task)) {
 // selection is changed.
 func (t *Table) SetSelectionChangedFunc(f func(t task.Task)) {
 	t.Table.SetSelectionChangedFunc(func(row, column int) {
-		task, ok := t.tasks[row]
-		if !ok {
+		if row-1 >= len(t.tasks) || row-1 < 0 {
 			return
 		}
 
-		f(task)
+		f(t.tasks[row-1])
 	})
 }
