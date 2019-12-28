@@ -17,3 +17,18 @@ func New(id int, title string) Task {
 		Body:  "",
 	}
 }
+
+// SortedByID represents tasks slice sorted by ID.
+type SortedByID []Task
+
+func (tasks SortedByID) Len() int {
+	return len(tasks)
+}
+
+func (tasks SortedByID) Swap(i, j int) {
+	tasks[i], tasks[j] = tasks[j], tasks[i]
+}
+
+func (tasks SortedByID) Less(i, j int) bool {
+	return tasks[i].ID < tasks[j].ID
+}

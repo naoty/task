@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"sort"
+
 	"github.com/gdamore/tcell"
 	"github.com/naoty/task/task"
 	"github.com/rivo/tview"
@@ -12,7 +14,7 @@ type Table struct {
 
 	tasks []task.Task
 
-	// rows indexed by task id
+	// cells indexed by row number
 	rows map[int][]*tview.TableCell
 }
 
@@ -31,40 +33,55 @@ func NewTable() *Table {
 	}
 }
 
-// SetTask sets passed task to table.
-func (t *Table) SetTask(task task.Task) {
-	row, ok := t.rows[task.ID]
+// SetTask append passed task to internal tasks.
+func (t *Table) SetTask(_task task.Task) {
+	newTask := true
 
-	checkbox := "[ ]"
-	if task.Done {
-		checkbox = tview.Escape("[x]")
+	for i, task := range t.tasks {
+		if task.ID == _task.ID {
+			t.tasks[i] = _task
+			newTask = false
+			break
+		}
 	}
 
-	if ok {
-		row[0].SetText(checkbox)
-		row[1].SetText(task.Title)
-		t.updateTask(task)
-		return
+	if newTask {
+		t.tasks = append(t.tasks, _task)
 	}
 
-	nextRowNumber := t.GetRowCount()
-
-	checkboxCell := tview.NewTableCell(checkbox)
-	t.SetCell(nextRowNumber, 0, checkboxCell)
-
-	titleCell := tview.NewTableCell(task.Title).SetExpansion(1)
-	t.SetCell(nextRowNumber, 1, titleCell)
-
-	t.rows[task.ID] = []*tview.TableCell{checkboxCell, titleCell}
-	t.tasks = append(t.tasks, task)
+	sort.Sort(task.SortedByID(t.tasks))
 }
 
-func (t *Table) updateTask(task task.Task) {
-	for i, _task := range t.tasks {
-		if _task.ID == task.ID {
-			t.tasks[i] = task
-			return
+// DrawTasks sets the content of tasks to cells.
+func (t *Table) DrawTasks() {
+	for i, task := range t.tasks {
+		// exclude header row
+		row := i + 1
+
+		cells, ok := t.rows[row]
+		if !ok {
+			checkbox := "[ ]"
+			if task.Done {
+				checkbox = tview.Escape("[x]")
+			}
+			checkboxCell := tview.NewTableCell(checkbox)
+			t.SetCell(row, 0, checkboxCell)
+
+			titleCell := tview.NewTableCell(task.Title).SetExpansion(1)
+			t.SetCell(row, 1, titleCell)
+
+			cells = append(cells, checkboxCell, titleCell)
+			t.rows[row] = cells
+
+			continue
 		}
+
+		if task.Done {
+			cells[0].SetText(tview.Escape("[x]"))
+		} else {
+			cells[0].SetText("[ ]")
+		}
+		cells[1].SetText(task.Title)
 	}
 }
 
