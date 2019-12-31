@@ -34,54 +34,55 @@ func NewTable() *Table {
 }
 
 // SetTask append passed task to internal tasks.
-func (t *Table) SetTask(_task task.Task) {
-	newTask := true
-
+func (t *Table) SetTask(newTask task.Task) {
 	for i, task := range t.tasks {
-		if task.ID == _task.ID {
-			t.tasks[i] = _task
-			newTask = false
-			break
+		if task.ID == newTask.ID && newTask.Done {
+			t.tasks = append(t.tasks[:i], t.tasks[i+1:]...)
+			return
+		}
+
+		if task.ID == newTask.ID && !newTask.Done {
+			t.tasks[i] = newTask
+			return
 		}
 	}
 
-	if newTask {
-		t.tasks = append(t.tasks, _task)
+	if !newTask.Done {
+		t.tasks = append(t.tasks, newTask)
 	}
+}
 
+// SortTasks sort tasks.
+func (t *Table) SortTasks() {
 	sort.Sort(task.SortedByID(t.tasks))
 }
 
-// DrawTasks sets the content of tasks to cells.
+// DrawTasks sets the content of tasks to cells and
+// removes unused rows.
 func (t *Table) DrawTasks() {
 	for i, task := range t.tasks {
 		// exclude header row
 		row := i + 1
-
 		cells, ok := t.rows[row]
-		if !ok {
-			checkbox := "[ ]"
-			if task.Done {
-				checkbox = tview.Escape("[x]")
-			}
-			checkboxCell := tview.NewTableCell(checkbox)
-			t.SetCell(row, 0, checkboxCell)
 
-			titleCell := tview.NewTableCell(task.Title).SetExpansion(1)
-			t.SetCell(row, 1, titleCell)
-
-			cells = append(cells, checkboxCell, titleCell)
-			t.rows[row] = cells
-
+		if ok {
+			cells[0].SetText("[ ]")
+			cells[1].SetText(task.Title)
 			continue
 		}
 
-		if task.Done {
-			cells[0].SetText(tview.Escape("[x]"))
-		} else {
-			cells[0].SetText("[ ]")
-		}
-		cells[1].SetText(task.Title)
+		checkbox := tview.NewTableCell("[ ]")
+		t.SetCell(row, 0, checkbox)
+
+		title := tview.NewTableCell(task.Title)
+		t.SetCell(row, 1, title)
+
+		t.rows[row] = []*tview.TableCell{checkbox, title}
+	}
+
+	for row := 1 + len(t.tasks); row < t.Table.GetRowCount(); row++ {
+		t.Table.RemoveRow(row)
+		delete(t.rows, row)
 	}
 }
 

@@ -58,7 +58,9 @@ func (app *Application) StartAutoReload(eventStream <-chan task.Event) {
 				}
 
 				task := *event.Task
+
 				app.table.SetTask(task)
+				app.table.SortTasks()
 
 				app.QueueUpdateDraw(func() {
 					app.table.DrawTasks()
