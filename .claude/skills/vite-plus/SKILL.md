@@ -1,3 +1,8 @@
+---
+name: vite-plus
+description: How to use Vite+, the unified toolchain for the web, in this project. Vite+ wraps runtime management, package management, and frontend tooling in a single global CLI called `vp`. It is built on top of Vite, Rollup, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task.
+---
+
 <!--VITE PLUS START-->
 
 # Using Vite+, the Unified Toolchain for the Web
