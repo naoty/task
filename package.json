@@ -10,6 +10,7 @@
     "build": "vp pack"
   },
   "dependencies": {
+    "@tsdown/exe": "^0.21.4",
     "cac": "^6.7.14"
   },
   "devDependencies": {

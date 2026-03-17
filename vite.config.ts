@@ -11,5 +11,10 @@ export default defineConfig({
     outDir: "dist",
     dts: false,
     platform: "node",
+    deps: { alwaysBundle: ["cac"] },
+    exe: {
+      outDir: "build",
+      targets: [{ platform: "linux", arch: "x64", nodeVersion: "latest" }],
+    },
   },
 });
