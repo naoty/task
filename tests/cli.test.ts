@@ -11,10 +11,10 @@ function run(args: string): string {
   });
 }
 
-test("--version はバージョンを表示する", () => {
-  expect(run("--version")).toContain("0.1.0");
+test("--version はバージョンのみを表示する", () => {
+  expect(run("--version").trim()).toBe("0.1.0");
 });
 
-test("-v はバージョンを表示する", () => {
-  expect(run("-v")).toContain("0.1.0");
+test("-v はバージョンのみを表示する", () => {
+  expect(run("-v").trim()).toBe("0.1.0");
 });
