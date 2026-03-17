@@ -2,7 +2,7 @@
   "name": "task",
   "version": "0.1.0",
   "bin": {
-    "task": "./dist/index.js"
+    "task": "./dist/index.mjs"
   },
   "type": "module",
   "scripts": {
