@@ -28,6 +28,7 @@
 
 - 言語: TypeScript
 - ランタイム: Node.js
+- パッケージ管理: pnpm
 - ツールキット: Vite+
 - Web UI: React Router（メタフレームワークとして使用し、APIサーバーも兼ねる）
 
