@@ -17,7 +17,8 @@ cli.command("add [title]", "タスクを作成する").action(async (title?: str
       JSON.stringify({
         ok: false,
         error: {
-          message: "title is required. Usage: task add <title>",
+          message: "title is required",
+          usage: "task add <title>",
           retriable: false,
         },
       })
