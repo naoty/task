@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config",
-    "build": "vp pack"
+    "build": "vp pack",
+    "test": "vp test"
   },
   "dependencies": {
     "@tsdown/exe": "^0.21.4",
