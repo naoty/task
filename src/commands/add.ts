@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 export async function add(title: string, taskDir: string): Promise<{ id: number }> {
@@ -13,6 +13,16 @@ export async function add(title: string, taskDir: string): Promise<{ id: number 
 
   const content = `---\ntitle: ${title}\nstatus: todo\n---\n`;
   writeFileSync(resolve(taskDir, `${id}.md`), content);
+
+  const indexPath = resolve(taskDir, "index.json");
+  let index: number[] = [];
+  try {
+    index = JSON.parse(readFileSync(indexPath, "utf-8"));
+  } catch {
+    // ファイルが存在しない場合は空配列のまま
+  }
+  index.push(id);
+  writeFileSync(indexPath, JSON.stringify(index));
 
   return { id };
 }
