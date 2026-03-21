@@ -7,6 +7,7 @@ import { version } from "../../package.json" with { type: "json" };
 import { add } from "../commands/add";
 import { deleteTask } from "../commands/delete";
 import { list } from "../commands/list";
+import { next } from "../commands/next";
 import { updateTask } from "../commands/update";
 
 const cli = cac("task");
@@ -31,6 +32,13 @@ cli.command("add [title]", "タスクを作成する").action(async (title?: str
 
   const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
   const result = await add(title, taskDir);
+  console.log(JSON.stringify({ ok: true, result }));
+  process.exit(0);
+});
+
+cli.command("next", "次にやるべきタスクを返す").action(async () => {
+  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+  const result = await next(taskDir);
   console.log(JSON.stringify({ ok: true, result }));
   process.exit(0);
 });
