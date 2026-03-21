@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter } from "../frontmatter";
+import { extractTaskIds } from "../task";
 import type { Task } from "../task";
 
 export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
@@ -9,15 +10,11 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
   }
 
   const files = readdirSync(taskDir);
-  const tasks: Task[] = files
-    .map((f) => f.match(/^(\d+)\.md$/))
-    .filter((m) => m !== null)
-    .map((m) => {
-      const id = parseInt(m[1], 10);
-      const content = readFileSync(resolve(taskDir, `${id}.md`), "utf-8");
-      const fields = parseFrontmatter(content);
-      return { id, title: fields.title ?? "", status: fields.status ?? "todo" };
-    });
+  const tasks: Task[] = extractTaskIds(files).map((id) => {
+    const content = readFileSync(resolve(taskDir, `${id}.md`), "utf-8");
+    const fields = parseFrontmatter(content);
+    return { id, title: fields.title ?? "", status: fields.status ?? "todo" };
+  });
 
   const indexPath = resolve(taskDir, "index.json");
   const index: number[] = existsSync(indexPath) ? JSON.parse(readFileSync(indexPath, "utf-8")) : [];
