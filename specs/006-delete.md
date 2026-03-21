@@ -12,8 +12,8 @@ task delete <id>
 
 ## 引数
 
-| 引数   | 必須 | 説明             |
-| ------ | ---- | ---------------- |
+| 引数   | 必須 | 説明               |
+| ------ | ---- | ------------------ |
 | `<id>` | 必須 | 削除するタスクのID |
 
 ## 動作
@@ -38,10 +38,10 @@ task delete <id>
 
 ### 異常系
 
-| 条件 | `error.message` | `error.usage` | `error.retriable` |
-| --- | --- | --- | --- |
-| `<id>` が指定されていない | `id is required` | `task delete <id>` | `false` |
-| 指定したIDのタスクが存在しない | `task not found: <id>` | `null` | `false` |
+| 条件                           | `error.message`        | `error.usage`      | `error.retriable` |
+| ------------------------------ | ---------------------- | ------------------ | ----------------- |
+| `<id>` が指定されていない      | `id is required`       | `task delete <id>` | `false`           |
+| 指定したIDのタスクが存在しない | `task not found: <id>` | `null`             | `false`           |
 
 ## 使用例
 

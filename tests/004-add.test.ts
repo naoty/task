@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, test } from "vite-plus/test";
-import { add } from "../src/commands/add.ts";
+import { add } from "../src/commands/add";
 
 function readIndex(taskDir: string): number[] {
   return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8"));
