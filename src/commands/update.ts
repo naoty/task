@@ -1,30 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
 
 const VALID_STATUSES = ["todo", "doing", "done"];
 
 type Task = Record<string, string | number>;
-
-function parseFrontmatter(content: string): Record<string, string> {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return {};
-
-  const fields: Record<string, string> = {};
-  for (const line of match[1].split("\n")) {
-    const m = line.match(/^(\w+):\s*(.+)$/);
-    if (m) {
-      fields[m[1]] = m[2];
-    }
-  }
-  return fields;
-}
-
-function serializeFrontmatter(fields: Record<string, string>, body: string): string {
-  const fm = Object.entries(fields)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join("\n");
-  return `---\n${fm}\n---\n${body}`;
-}
 
 export async function updateTask(
   id: number,

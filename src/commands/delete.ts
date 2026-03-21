@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
+import { readIndex, writeIndex } from "../index-file";
 
 export async function deleteTask(id: number, taskDir: string): Promise<{ id: number }> {
   const taskFile = resolve(taskDir, `${id}.md`);
@@ -9,12 +10,10 @@ export async function deleteTask(id: number, taskDir: string): Promise<{ id: num
 
   rmSync(taskFile);
 
-  const indexFile = resolve(taskDir, "index.json");
-  if (existsSync(indexFile)) {
-    const index: number[] = JSON.parse(readFileSync(indexFile, "utf-8"));
-    const updated = index.filter((i) => i !== id);
-    writeFileSync(indexFile, JSON.stringify(updated));
-  }
+  writeIndex(
+    taskDir,
+    readIndex(taskDir).filter((i) => i !== id),
+  );
 
   return { id };
 }

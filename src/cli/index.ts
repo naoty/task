@@ -10,75 +10,54 @@ import { list } from "../commands/list";
 import { next } from "../commands/next";
 import { updateTask } from "../commands/update";
 
+function getTaskDir(): string {
+  return process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+}
+
+function respondSuccess(result: unknown): never {
+  console.log(JSON.stringify({ ok: true, result }));
+  process.exit(0);
+}
+
+function respondError(message: string, usage: string | null = null): never {
+  console.log(JSON.stringify({ ok: false, error: { message, usage, retriable: false } }));
+  process.exit(1);
+}
+
+function respondException(e: unknown): never {
+  respondError(e instanceof Error ? e.message : String(e));
+}
+
 const cli = cac("task");
 
 cli.option("-v, --version", "バージョンを表示する");
 cli.help();
 
 cli.command("add [title]", "タスクを作成する").action(async (title?: string) => {
-  if (!title) {
-    console.log(
-      JSON.stringify({
-        ok: false,
-        error: {
-          message: "title is required",
-          usage: "task add <title>",
-          retriable: false,
-        },
-      }),
-    );
-    process.exit(1);
-  }
+  if (!title) respondError("title is required", "task add <title>");
 
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
-  const result = await add(title, taskDir);
-  console.log(JSON.stringify({ ok: true, result }));
-  process.exit(0);
+  const result = await add(title, getTaskDir());
+  respondSuccess(result);
 });
 
 cli.command("next", "次にやるべきタスクを返す").action(async () => {
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
-  const result = await next(taskDir);
-  console.log(JSON.stringify({ ok: true, result }));
-  process.exit(0);
+  const result = await next(getTaskDir());
+  respondSuccess(result);
 });
 
 cli.command("list", "タスク一覧を表示する").action(async () => {
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
-  const result = await list(taskDir);
-  console.log(JSON.stringify({ ok: true, result }));
-  process.exit(0);
+  const result = await list(getTaskDir());
+  respondSuccess(result);
 });
 
 cli.command("delete [id]", "タスクを削除する").action(async (id?: string) => {
-  if (!id) {
-    console.log(
-      JSON.stringify({
-        ok: false,
-        error: {
-          message: "id is required",
-          usage: "task delete <id>",
-          retriable: false,
-        },
-      }),
-    );
-    process.exit(1);
-  }
+  if (!id) respondError("id is required", "task delete <id>");
 
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
   try {
-    const result = await deleteTask(parseInt(id, 10), taskDir);
-    console.log(JSON.stringify({ ok: true, result }));
-    process.exit(0);
+    const result = await deleteTask(parseInt(id, 10), getTaskDir());
+    respondSuccess(result);
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.log(
-      JSON.stringify({
-        ok: false,
-        error: { message, usage: null, retriable: false },
-      }),
-    );
-    process.exit(1);
+    respondException(e);
   }
 });
 
@@ -86,17 +65,7 @@ cli
   .command("update [id]", "タスクを更新する")
   .action(async (id?: string, options: Record<string, unknown> = {}) => {
     if (!id) {
-      console.log(
-        JSON.stringify({
-          ok: false,
-          error: {
-            message: "id is required",
-            usage: "task update <id> --<field> <value> [--<field> <value>...]",
-            retriable: false,
-          },
-        }),
-      );
-      process.exit(1);
+      respondError("id is required", "task update <id> --<field> <value> [--<field> <value>...]");
     }
 
     const {
@@ -112,33 +81,17 @@ cli
     );
 
     if (Object.keys(stringUpdates).length === 0) {
-      console.log(
-        JSON.stringify({
-          ok: false,
-          error: {
-            message: "at least one option is required",
-            usage: "task update <id> --<field> <value> [--<field> <value>...]",
-            retriable: false,
-          },
-        }),
+      respondError(
+        "at least one option is required",
+        "task update <id> --<field> <value> [--<field> <value>...]",
       );
-      process.exit(1);
     }
 
-    const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
     try {
-      const task = await updateTask(parseInt(id, 10), stringUpdates, taskDir);
-      console.log(JSON.stringify({ ok: true, result: { task } }));
-      process.exit(0);
+      const task = await updateTask(parseInt(id, 10), stringUpdates, getTaskDir());
+      respondSuccess({ task });
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      console.log(
-        JSON.stringify({
-          ok: false,
-          error: { message, usage: null, retriable: false },
-        }),
-      );
-      process.exit(1);
+      respondException(e);
     }
   });
 
