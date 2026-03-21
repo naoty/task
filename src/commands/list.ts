@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter } from "../frontmatter";
+import { readIndex } from "../index-file";
 import { extractTaskIds } from "../task";
 import type { Task } from "../task";
 
@@ -16,8 +17,7 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
     return { id, title: fields.title ?? "", status: fields.status ?? "todo" };
   });
 
-  const indexPath = resolve(taskDir, "index.json");
-  const index: number[] = existsSync(indexPath) ? JSON.parse(readFileSync(indexPath, "utf-8")) : [];
+  const index = readIndex(taskDir);
 
   tasks.sort((a, b) => {
     const ai = index.indexOf(a.id);
