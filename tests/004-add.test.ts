@@ -4,6 +4,10 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, test } from "vite-plus/test";
 import { add } from "../src/commands/add.ts";
 
+function readIndex(taskDir: string): number[] {
+  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8"));
+}
+
 let taskDir: string;
 
 beforeEach(() => {
@@ -37,4 +41,16 @@ test("TASK_DIRが存在しない場合は自動的に作成する", async () => 
   const result = await add("タスク", nonExistentDir);
   expect(result).toEqual({ id: 1 });
   expect(readdirSync(nonExistentDir)).toContain("1.md");
+});
+
+test("タスク作成後にインデックスファイルに新しいIDが末尾に追加される", async () => {
+  await add("タスク1", taskDir);
+  await add("タスク2", taskDir);
+  await add("タスク3", taskDir);
+  expect(readIndex(taskDir)).toEqual([1, 2, 3]);
+});
+
+test("インデックスファイルが存在しない場合は新規作成される", async () => {
+  await add("タスク", taskDir);
+  expect(readIndex(taskDir)).toEqual([1]);
 });
