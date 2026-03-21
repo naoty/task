@@ -34,9 +34,7 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
     });
 
   const indexPath = resolve(taskDir, "index.json");
-  const index: number[] = existsSync(indexPath)
-    ? JSON.parse(readFileSync(indexPath, "utf-8"))
-    : [];
+  const index: number[] = existsSync(indexPath) ? JSON.parse(readFileSync(indexPath, "utf-8")) : [];
 
   tasks.sort((a, b) => {
     const ai = index.indexOf(a.id);

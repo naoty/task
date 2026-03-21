@@ -12,18 +12,18 @@ task update <id> --<field> <value> [--<field> <value>...]
 
 ## 引数・オプション
 
-| 引数/オプション | 必須 | 説明 |
-| --- | --- | --- |
-| `<id>` | 必須 | 更新するタスクのID |
+| 引数/オプション     | 必須        | 説明                                                                |
+| ------------------- | ----------- | ------------------------------------------------------------------- |
+| `<id>`              | 必須        | 更新するタスクのID                                                  |
 | `--<field> <value>` | 1つ以上必須 | 更新するフィールド名と値。frontmatterの任意のフィールドを指定できる |
 
 ## フィールドのバリデーション
 
 既知のフィールドには以下のバリデーションを適用する。
 
-| フィールド | 有効な値 |
-| --- | --- |
-| `status` | `todo` / `doing` / `done` |
+| フィールド | 有効な値                  |
+| ---------- | ------------------------- |
+| `status`   | `todo` / `doing` / `done` |
 
 未知のフィールドはバリデーションなしでそのまま保存する。
 
@@ -50,12 +50,12 @@ task update <id> --<field> <value> [--<field> <value>...]
 
 ### 異常系
 
-| 条件 | `error.message` | `error.usage` | `error.retriable` |
-| --- | --- | --- | --- |
-| `<id>` が指定されていない | `id is required` | `task update <id> --<field> <value> [--<field> <value>...]` | `false` |
-| オプションが何も指定されていない | `at least one option is required` | `task update <id> --<field> <value> [--<field> <value>...]` | `false` |
-| フィールドのバリデーションに失敗した | `invalid <field>: <value>` | `null` | `false` |
-| 指定したIDのタスクが存在しない | `task not found: <id>` | `null` | `false` |
+| 条件                                 | `error.message`                   | `error.usage`                                               | `error.retriable` |
+| ------------------------------------ | --------------------------------- | ----------------------------------------------------------- | ----------------- |
+| `<id>` が指定されていない            | `id is required`                  | `task update <id> --<field> <value> [--<field> <value>...]` | `false`           |
+| オプションが何も指定されていない     | `at least one option is required` | `task update <id> --<field> <value> [--<field> <value>...]` | `false`           |
+| フィールドのバリデーションに失敗した | `invalid <field>: <value>`        | `null`                                                      | `false`           |
+| 指定したIDのタスクが存在しない       | `task not found: <id>`            | `null`                                                      | `false`           |
 
 ## 使用例
 

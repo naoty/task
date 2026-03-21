@@ -5,6 +5,8 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "strict": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "types": ["node"]
   },
   "include": ["src", "tests"]
