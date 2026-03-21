@@ -10,6 +10,10 @@ import { list } from "../commands/list";
 import { next } from "../commands/next";
 import { updateTask } from "../commands/update";
 
+function getTaskDir(): string {
+  return process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+}
+
 const cli = cac("task");
 
 cli.option("-v, --version", "バージョンを表示する");
@@ -30,21 +34,21 @@ cli.command("add [title]", "タスクを作成する").action(async (title?: str
     process.exit(1);
   }
 
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+  const taskDir = getTaskDir();
   const result = await add(title, taskDir);
   console.log(JSON.stringify({ ok: true, result }));
   process.exit(0);
 });
 
 cli.command("next", "次にやるべきタスクを返す").action(async () => {
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+  const taskDir = getTaskDir();
   const result = await next(taskDir);
   console.log(JSON.stringify({ ok: true, result }));
   process.exit(0);
 });
 
 cli.command("list", "タスク一覧を表示する").action(async () => {
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+  const taskDir = getTaskDir();
   const result = await list(taskDir);
   console.log(JSON.stringify({ ok: true, result }));
   process.exit(0);
@@ -65,7 +69,7 @@ cli.command("delete [id]", "タスクを削除する").action(async (id?: string
     process.exit(1);
   }
 
-  const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+  const taskDir = getTaskDir();
   try {
     const result = await deleteTask(parseInt(id, 10), taskDir);
     console.log(JSON.stringify({ ok: true, result }));
@@ -125,7 +129,7 @@ cli
       process.exit(1);
     }
 
-    const taskDir = process.env.TASK_DIR ?? resolve(homedir(), ".tasks");
+    const taskDir = getTaskDir();
     try {
       const task = await updateTask(parseInt(id, 10), stringUpdates, taskDir);
       console.log(JSON.stringify({ ok: true, result: { task } }));
