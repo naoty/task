@@ -1,11 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-
-type Task = {
-  id: number;
-  title: string;
-  status: string;
-};
+import type { Task } from "../task";
 
 function parseFrontmatter(content: string): { title: string; status: string } {
   const match = content.match(/^---\n([\s\S]*?)\n---/);

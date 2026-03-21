@@ -1,10 +1,5 @@
+import type { Task } from "../task";
 import { list } from "./list";
-
-type Task = {
-  id: number;
-  title: string;
-  status: string;
-};
 
 export async function next(taskDir: string): Promise<{ task: Task | null }> {
   const { tasks } = await list(taskDir);
