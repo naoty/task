@@ -4,10 +4,10 @@ import cac from "cac";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { version } from "../../package.json" with { type: "json" };
-import { add } from "../commands/add.ts";
-import { deleteTask } from "../commands/delete.ts";
-import { list } from "../commands/list.ts";
-import { updateTask } from "../commands/update.ts";
+import { add } from "../commands/add";
+import { deleteTask } from "../commands/delete";
+import { list } from "../commands/list";
+import { updateTask } from "../commands/update";
 
 const cli = cac("task");
 

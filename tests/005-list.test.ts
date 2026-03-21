@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, test } from "vite-plus/test";
-import { list } from "../src/commands/list.ts";
+import { list } from "../src/commands/list";
 
 let taskDir: string;
 

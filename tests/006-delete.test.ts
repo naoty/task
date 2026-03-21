@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, test } from "vite-plus/test";
-import { deleteTask } from "../src/commands/delete.ts";
+import { deleteTask } from "../src/commands/delete";
 
 let taskDir: string;
 
