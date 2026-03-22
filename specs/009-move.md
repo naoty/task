@@ -37,7 +37,7 @@ task move <id> <number>
 {
   "ok": true,
   "result": {
-    "task": { "id": 1, "title": "買い物をする", "status": "todo" }
+    "task": { "id": 1, "title": "買い物をする", "status": "todo", "path": "/home/user/.tasks/1.md" }
   }
 }
 ```
@@ -77,7 +77,7 @@ $ task list
 { "ok": true, "result": { "tasks": [{ "id": 3, ... }, { "id": 1, ... }, { "id": 2, ... }] } }
 
 $ task move 2 1
-{ "ok": true, "result": { "task": { "id": 2, "title": "掃除をする", "status": "todo" } } }
+{ "ok": true, "result": { "task": { "id": 2, "title": "掃除をする", "status": "todo", "path": "/home/user/.tasks/2.md" } } }
 
 $ task list
 { "ok": true, "result": { "tasks": [{ "id": 2, ... }, { "id": 3, ... }, { "id": 1, ... }] } }

@@ -45,7 +45,12 @@ task update <id> --<field> <value> [--<field> <value>...]
 `result.task` に更新後のタスクを含む。frontmatterのすべてのフィールドを返す。
 
 ```json
-{ "ok": true, "result": { "task": { "id": 1, "title": "買い物をする", "status": "done" } } }
+{
+  "ok": true,
+  "result": {
+    "task": { "id": 1, "title": "買い物をする", "status": "done", "path": "/home/user/.tasks/1.md" }
+  }
+}
 ```
 
 ### 異常系
@@ -61,17 +66,17 @@ task update <id> --<field> <value> [--<field> <value>...]
 
 ```
 $ task update 1 --status done
-{ "ok": true, "result": { "task": { "id": 1, "title": "買い物をする", "status": "done" } } }
+{ "ok": true, "result": { "task": { "id": 1, "title": "買い物をする", "status": "done", "path": "/home/user/.tasks/1.md" } } }
 ```
 
 ```
 $ task update 1 --title "買い物と掃除をする" --status doing
-{ "ok": true, "result": { "task": { "id": 1, "title": "買い物と掃除をする", "status": "doing" } } }
+{ "ok": true, "result": { "task": { "id": 1, "title": "買い物と掃除をする", "status": "doing", "path": "/home/user/.tasks/1.md" } } }
 ```
 
 ```
 $ task update 1 --deadline 2026-03-31
-{ "ok": true, "result": { "task": { "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" } } }
+{ "ok": true, "result": { "task": { "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31", "path": "/home/user/.tasks/1.md" } } }
 ```
 
 ```
