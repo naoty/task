@@ -97,16 +97,18 @@ cli
     }
   });
 
-cli.command("move [id] [number]", "タスクの優先順位を変更する").action(async (id?: string, number?: string) => {
-  if (!id || !number) respondError("id and number are required", "task move <id> <number>");
+cli
+  .command("move [id] [number]", "タスクの優先順位を変更する")
+  .action(async (id?: string, number?: string) => {
+    if (!id || !number) respondError("id and number are required", "task move <id> <number>");
 
-  try {
-    const task = await moveTask(parseInt(id, 10), parseInt(number, 10), getTaskDir());
-    respondSuccess({ task });
-  } catch (e) {
-    respondException(e);
-  }
-});
+    try {
+      const task = await moveTask(parseInt(id, 10), parseInt(number, 10), getTaskDir());
+      respondSuccess({ task });
+    } catch (e) {
+      respondException(e);
+    }
+  });
 
 const { options } = cli.parse();
 
