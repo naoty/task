@@ -29,8 +29,14 @@ task list
   "ok": true,
   "result": {
     "tasks": [
-      { "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" },
-      { "id": 2, "title": "掃除をする", "status": "done" }
+      {
+        "id": 1,
+        "title": "買い物をする",
+        "status": "todo",
+        "deadline": "2026-03-31",
+        "path": "/home/user/.tasks/1.md"
+      },
+      { "id": 2, "title": "掃除をする", "status": "done", "path": "/home/user/.tasks/2.md" }
     ]
   }
 }
@@ -40,5 +46,5 @@ task list
 
 ```
 $ task list
-{ "ok": true, "result": { "tasks": [{ "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" }, { "id": 2, "title": "掃除をする", "status": "done" }] } }
+{ "ok": true, "result": { "tasks": [{ "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31", "path": "/home/user/.tasks/1.md" }, { "id": 2, "title": "掃除をする", "status": "done", "path": "/home/user/.tasks/2.md" }] } }
 ```

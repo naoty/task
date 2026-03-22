@@ -15,9 +15,10 @@ export function extractTaskIds(files: string[]): number[] {
 }
 
 export function readTask(id: number, taskDir: string): Task {
-  const content = readFileSync(resolve(taskDir, `${id}.md`), "utf-8");
+  const filePath = resolve(taskDir, `${id}.md`);
+  const content = readFileSync(filePath, "utf-8");
   const fields = parseFrontmatter(content);
-  const task: Task = { id };
+  const task: Task = { id, path: filePath };
   for (const [key, value] of Object.entries(fields)) {
     task[key] = value;
   }
