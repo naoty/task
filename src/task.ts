@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { parseFrontmatter } from "./frontmatter";
+
 export type Task = {
   id: number;
-  title: string;
-  status: string;
+  [key: string]: string | number;
 };
 
 export function extractTaskIds(files: string[]): number[] {
@@ -9,4 +12,14 @@ export function extractTaskIds(files: string[]): number[] {
     .map((f) => f.match(/^(\d+)\.md$/))
     .filter((m) => m !== null)
     .map((m) => parseInt(m[1], 10));
+}
+
+export function readTask(id: number, taskDir: string): Task {
+  const content = readFileSync(resolve(taskDir, `${id}.md`), "utf-8");
+  const fields = parseFrontmatter(content);
+  const task: Task = { id };
+  for (const [key, value] of Object.entries(fields)) {
+    task[key] = value;
+  }
+  return task;
 }
