@@ -8,19 +8,14 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
     return { tasks: [] };
   }
 
-  const files = readdirSync(taskDir);
-  const tasks: Task[] = extractTaskIds(files).map((id) => readTask(id, taskDir));
-
   const index = readIndex(taskDir);
+  const indexedTasks: Task[] = index.map((id) => readTask(id, taskDir));
 
-  tasks.sort((a, b) => {
-    const ai = index.indexOf(a.id);
-    const bi = index.indexOf(b.id);
-    if (ai === -1 && bi === -1) return a.id - b.id;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  const files = readdirSync(taskDir);
+  const allIds = extractTaskIds(files);
+  const indexedIds = new Set(index);
+  const remainingIds = allIds.filter((id) => !indexedIds.has(id)).sort((a, b) => a - b);
+  const remainingTasks: Task[] = remainingIds.map((id) => readTask(id, taskDir));
 
-  return { tasks };
+  return { tasks: [...indexedTasks, ...remainingTasks] };
 }
