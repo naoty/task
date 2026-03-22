@@ -58,6 +58,16 @@ test("frontmatterのすべてのフィールドを返す", async () => {
   });
 });
 
+test("インデックスに存在しないタスクIDがある場合、そのIDを無視する", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1, 99]));
+
+  const result = await list(taskDir());
+  expect(result).toEqual({
+    tasks: [{ id: 1, title: "タスク1", status: "todo" }],
+  });
+});
+
 test("インデックスにないタスクはインデックスにあるタスクの後に返す", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: done\n---\n");
