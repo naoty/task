@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
+import { readTask } from "../task";
+import type { Task } from "../task";
 
 const VALID_STATUSES = ["todo", "doing", "done"];
-
-type Task = Record<string, string | number>;
 
 export async function updateTask(
   id: number,
@@ -34,9 +34,5 @@ export async function updateTask(
 
   writeFileSync(taskFile, serializeFrontmatter(fields, body));
 
-  const task: Task = { id };
-  for (const [key, value] of Object.entries(fields)) {
-    task[key] = value;
-  }
-  return task;
+  return readTask(id, taskDir);
 }

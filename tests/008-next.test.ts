@@ -36,6 +36,19 @@ test("インデックスの優先順位順で最初の todo タスクを返す",
   expect(result).toEqual({ task: { id: 3, title: "タスク3", status: "todo" } });
 });
 
+test("frontmatterのすべてのフィールドを返す", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: タスク1\nstatus: todo\ndeadline: 2026-03-31\n---\n",
+  );
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1]));
+
+  const result = await next(taskDir());
+  expect(result).toEqual({
+    task: { id: 1, title: "タスク1", status: "todo", deadline: "2026-03-31" },
+  });
+});
+
 test("todo より前の done タスクをスキップして最初の todo タスクを返す", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: done\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");

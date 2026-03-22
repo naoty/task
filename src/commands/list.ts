@@ -1,8 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
-import { parseFrontmatter } from "../frontmatter";
+import { existsSync, readdirSync } from "node:fs";
 import { readIndex } from "../index-file";
-import { extractTaskIds } from "../task";
+import { extractTaskIds, readTask } from "../task";
 import type { Task } from "../task";
 
 export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
@@ -11,11 +9,7 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
   }
 
   const files = readdirSync(taskDir);
-  const tasks: Task[] = extractTaskIds(files).map((id) => {
-    const content = readFileSync(resolve(taskDir, `${id}.md`), "utf-8");
-    const fields = parseFrontmatter(content);
-    return { id, title: fields.title ?? "", status: fields.status ?? "todo" };
-  });
+  const tasks: Task[] = extractTaskIds(files).map((id) => readTask(id, taskDir));
 
   const index = readIndex(taskDir);
 

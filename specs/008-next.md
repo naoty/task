@@ -22,10 +22,10 @@ task next
 
 ### 正常系
 
-`result.task` に該当タスクを含む。`todo` のタスクがない場合は `null`。
+`result.task` に該当タスクを含む。`todo` のタスクがない場合は `null`。frontmatterのすべてのフィールドを返す。
 
 ```json
-{ "ok": true, "result": { "task": { "id": 3, "title": "買い物をする", "status": "todo" } } }
+{ "ok": true, "result": { "task": { "id": 3, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" } } }
 ```
 
 ```json
@@ -36,7 +36,7 @@ task next
 
 ```
 $ task next
-{ "ok": true, "result": { "task": { "id": 3, "title": "買い物をする", "status": "todo" } } }
+{ "ok": true, "result": { "task": { "id": 3, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" } } }
 ```
 
 ```

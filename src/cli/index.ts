@@ -63,6 +63,7 @@ cli.command("delete [id]", "タスクを削除する").action(async (id?: string
 
 cli
   .command("update [id]", "タスクを更新する")
+  .allowUnknownOptions()
   .action(async (id?: string, options: Record<string, unknown> = {}) => {
     if (!id) {
       respondError("id is required", "task update <id> --<field> <value> [--<field> <value>...]");

@@ -22,14 +22,14 @@ task list
 
 ### 正常系
 
-`result.tasks` にタスクの配列を含む。タスクが0件の場合は空の配列を返す。
+`result.tasks` にタスクの配列を含む。タスクが0件の場合は空の配列を返す。frontmatterのすべてのフィールドを返す。
 
 ```json
 {
   "ok": true,
   "result": {
     "tasks": [
-      { "id": 1, "title": "買い物をする", "status": "todo" },
+      { "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" },
       { "id": 2, "title": "掃除をする", "status": "done" }
     ]
   }
@@ -40,5 +40,5 @@ task list
 
 ```
 $ task list
-{ "ok": true, "result": { "tasks": [{ "id": 1, "title": "買い物をする", "status": "todo" }, { "id": 2, "title": "掃除をする", "status": "done" }] } }
+{ "ok": true, "result": { "tasks": [{ "id": 1, "title": "買い物をする", "status": "todo", "deadline": "2026-03-31" }, { "id": 2, "title": "掃除をする", "status": "done" }] } }
 ```
