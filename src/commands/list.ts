@@ -9,18 +9,15 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
   }
 
   const files = readdirSync(taskDir);
-  const tasks: Task[] = extractTaskIds(files).map((id) => readTask(id, taskDir));
+  const allIds = new Set(extractTaskIds(files));
 
   const index = readIndex(taskDir);
+  const indexedIds = index.filter((id) => allIds.has(id));
+  const indexedTasks: Task[] = indexedIds.map((id) => readTask(id, taskDir));
 
-  tasks.sort((a, b) => {
-    const ai = index.indexOf(a.id);
-    const bi = index.indexOf(b.id);
-    if (ai === -1 && bi === -1) return a.id - b.id;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  const indexedIdSet = new Set(indexedIds);
+  const remainingIds = [...allIds].filter((id) => !indexedIdSet.has(id)).sort((a, b) => a - b);
+  const remainingTasks: Task[] = remainingIds.map((id) => readTask(id, taskDir));
 
-  return { tasks };
+  return { tasks: [...indexedTasks, ...remainingTasks] };
 }
