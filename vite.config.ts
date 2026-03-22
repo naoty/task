@@ -14,6 +14,7 @@ export default defineConfig({
     deps: { alwaysBundle: ["cac"] },
     exe: {
       outDir: "build",
+      fileName: "task",
       targets: [{ platform: "linux", arch: "x64", nodeVersion: "latest" }],
     },
   },
