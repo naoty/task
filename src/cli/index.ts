@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { version } from "../../package.json" with { type: "json" };
 import { add } from "../commands/add";
+import { archive } from "../commands/archive";
 import { deleteTask } from "../commands/delete";
 import { list } from "../commands/list";
 import { moveTask } from "../commands/move";
@@ -48,6 +49,11 @@ cli.command("next", "次にやるべきタスクを返す").action(async () => {
 
 cli.command("list", "タスク一覧を表示する").action(async () => {
   const result = await list(getTaskDir());
+  respondSuccess(result);
+});
+
+cli.command("archive", "完了タスクをアーカイブする").action(async () => {
+  const result = await archive(getTaskDir());
   respondSuccess(result);
 });
 

@@ -1,0 +1,56 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { expect, test } from "vite-plus/test";
+import { archive } from "../src/commands/archive";
+import { useTempTaskDir } from "./helpers";
+
+const { taskDir } = useTempTaskDir();
+
+test("doneのタスクをインデックスから取り除く", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: done\n---\n");
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1, 2]));
+
+  await archive(taskDir());
+
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
+  expect(index).toEqual([1]);
+});
+
+test("アーカイブしたタスクの配列を返す", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: done\n---\n");
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1, 2]));
+
+  const result = await archive(taskDir());
+
+  expect(result).toEqual({
+    tasks: [{ id: 2, title: "タスク2", status: "done", path: resolve(taskDir(), "2.md") }],
+  });
+});
+
+test("todo/doingのタスクはアーカイブされない", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: doing\n---\n");
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1, 2]));
+
+  const result = await archive(taskDir());
+
+  expect(result).toEqual({ tasks: [] });
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
+  expect(index).toEqual([1, 2]);
+});
+
+test("doneのタスクが0件のとき空の配列を返す", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1]));
+
+  const result = await archive(taskDir());
+
+  expect(result).toEqual({ tasks: [] });
+});
+
+test("タスクディレクトリが存在しない場合、空の配列を返す", async () => {
+  const result = await archive(resolve(taskDir(), "nonexistent"));
+  expect(result).toEqual({ tasks: [] });
+});
