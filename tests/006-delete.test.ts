@@ -25,10 +25,13 @@ test("タスクが存在しない場合はエラーをスローする", async ()
 test("インデックスファイルに含まれる場合は取り除く", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");
-  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([2, 1]));
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ order: [2, 1], dependencies: {} }),
+  );
   await deleteTask(1, taskDir());
   const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
-  expect(index).toEqual([2]);
+  expect(index.order).toEqual([2]);
 });
 
 test("インデックスファイルが存在しない場合はエラーにならない", async () => {

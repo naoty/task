@@ -7,6 +7,8 @@ import { version } from "../../package.json" with { type: "json" };
 import { add } from "../commands/add";
 import { archive } from "../commands/archive";
 import { deleteTask } from "../commands/delete";
+import { depAdd } from "../commands/dep-add";
+import { depDelete } from "../commands/dep-delete";
 import { list } from "../commands/list";
 import { moveTask } from "../commands/move";
 import { next } from "../commands/next";
@@ -21,8 +23,12 @@ function respondSuccess(result: unknown): never {
   process.exit(0);
 }
 
-function respondError(message: string, usage: string | null = null): never {
-  console.log(JSON.stringify({ ok: false, error: { message, usage, retriable: false } }));
+function respondError(
+  message: string,
+  usage: string | null = null,
+  extra: Record<string, unknown> = {},
+): never {
+  console.log(JSON.stringify({ ok: false, error: { message, usage, retriable: false, ...extra } }));
   process.exit(1);
 }
 
@@ -111,6 +117,53 @@ cli
     try {
       const task = await moveTask(parseInt(id, 10), parseInt(number, 10), getTaskDir());
       respondSuccess({ task });
+    } catch (e) {
+      respondException(e);
+    }
+  });
+
+cli.command("dep", "依存関係を管理する").action(() => {
+  respondError("subcommand is required", "task dep <subcommand>", {
+    subcommands: [
+      { name: "add", description: "依存関係を追加する" },
+      { name: "delete", description: "依存関係を削除する" },
+    ],
+  });
+});
+
+cli
+  .command("dep add [id] [...depIds]", "依存関係を追加する")
+  .action(async (id?: string, depIds: string[] = []) => {
+    if (!id || depIds.length === 0) {
+      respondError("id and dependency-id are required", "task dep add <id> <dependency-id>...");
+    }
+
+    try {
+      const result = await depAdd(
+        parseInt(id, 10),
+        depIds.map((d) => parseInt(d, 10)),
+        getTaskDir(),
+      );
+      respondSuccess(result);
+    } catch (e) {
+      respondException(e);
+    }
+  });
+
+cli
+  .command("dep delete [id] [...depIds]", "依存関係を削除する")
+  .action(async (id?: string, depIds: string[] = []) => {
+    if (!id || depIds.length === 0) {
+      respondError("id and dependency-id are required", "task dep delete <id> <dependency-id>...");
+    }
+
+    try {
+      const result = await depDelete(
+        parseInt(id, 10),
+        depIds.map((d) => parseInt(d, 10)),
+        getTaskDir(),
+      );
+      respondSuccess(result);
     } catch (e) {
       respondException(e);
     }

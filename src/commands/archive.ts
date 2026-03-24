@@ -12,7 +12,7 @@ export async function archive(taskDir: string): Promise<{ tasks: Task[] }> {
   const allIds = new Set(extractTaskIds(files));
 
   const index = readIndex(taskDir);
-  const indexedIds = index.filter((id) => allIds.has(id));
+  const indexedIds = index.order.filter((id) => allIds.has(id));
 
   const archivedTasks: Task[] = [];
   const remainingIds: number[] = [];
@@ -26,7 +26,14 @@ export async function archive(taskDir: string): Promise<{ tasks: Task[] }> {
     }
   }
 
-  writeIndex(taskDir, remainingIds);
+  const archivedIds = new Set(archivedTasks.map((t) => t.id));
+  const dependencies = Object.fromEntries(
+    Object.entries(index.dependencies)
+      .map(([key, deps]) => [key, deps.filter((id) => !archivedIds.has(id))])
+      .filter(([, deps]) => (deps as number[]).length > 0),
+  );
+
+  writeIndex(taskDir, { order: remainingIds, dependencies });
 
   return { tasks: archivedTasks };
 }

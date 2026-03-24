@@ -11,12 +11,12 @@ export async function moveTask(id: number, number: number, taskDir: string): Pro
   }
 
   const index = readIndex(taskDir);
-  const filtered = index.filter((i) => i !== id);
+  const filtered = index.order.filter((i) => i !== id);
 
   const position = Math.max(0, Math.min(number - 1, filtered.length));
   filtered.splice(position, 0, id);
 
-  writeIndex(taskDir, filtered);
+  writeIndex(taskDir, { ...index, order: filtered });
 
   return readTask(id, taskDir);
 }
