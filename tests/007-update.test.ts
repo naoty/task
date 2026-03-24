@@ -16,19 +16,35 @@ test("指定したフィールドを更新して保存する", async () => {
 test("更新後のタスクを返す", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
   const result = await updateTask(1, { status: "done" }, taskDir());
-  expect(result).toEqual({ id: 1, title: "買い物をする", status: "done" });
+  expect(result).toEqual({
+    id: 1,
+    title: "買い物をする",
+    status: "done",
+    path: resolve(taskDir(), "1.md"),
+  });
 });
 
 test("複数のフィールドを同時に更新できる", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
   const result = await updateTask(1, { title: "買い物と掃除をする", status: "doing" }, taskDir());
-  expect(result).toEqual({ id: 1, title: "買い物と掃除をする", status: "doing" });
+  expect(result).toEqual({
+    id: 1,
+    title: "買い物と掃除をする",
+    status: "doing",
+    path: resolve(taskDir(), "1.md"),
+  });
 });
 
 test("未知のフィールドをそのまま保存する", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
   const result = await updateTask(1, { deadline: "2026-03-31" }, taskDir());
-  expect(result).toEqual({ id: 1, title: "買い物をする", status: "todo", deadline: "2026-03-31" });
+  expect(result).toEqual({
+    id: 1,
+    title: "買い物をする",
+    status: "todo",
+    deadline: "2026-03-31",
+    path: resolve(taskDir(), "1.md"),
+  });
 });
 
 test("タスクが存在しない場合はエラーをスローする", async () => {

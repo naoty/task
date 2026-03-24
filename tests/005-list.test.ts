@@ -20,7 +20,10 @@ test("タスクをインデックスの優先順位順で返す", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: done\n---\n");
   writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: タスク3\nstatus: doing\n---\n");
-  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([3, 1, 2]));
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ order: [3, 1, 2], dependencies: {} }),
+  );
 
   const result = await list(taskDir());
   expect(result).toEqual({
@@ -45,7 +48,7 @@ test("frontmatterのすべてのフィールドを返す", async () => {
     resolve(taskDir(), "1.md"),
     "---\ntitle: タスク1\nstatus: todo\ndeadline: 2026-03-31\n---\n",
   );
-  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1]));
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify({ order: [1], dependencies: {} }));
 
   const result = await list(taskDir());
   expect(result).toEqual({
@@ -63,7 +66,10 @@ test("frontmatterのすべてのフィールドを返す", async () => {
 
 test("インデックスに存在しないタスクIDがある場合、そのIDを無視する", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
-  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([1, 99]));
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ order: [1, 99], dependencies: {} }),
+  );
 
   const result = await list(taskDir());
   expect(result).toEqual({
@@ -75,7 +81,7 @@ test("インデックスにないタスクは表示しない", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: done\n---\n");
   writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: タスク3\nstatus: todo\n---\n");
-  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify([2]));
+  writeFileSync(resolve(taskDir(), "index.json"), JSON.stringify({ order: [2], dependencies: {} }));
 
   const result = await list(taskDir());
   expect(result).toEqual({

@@ -4,8 +4,8 @@ import { expect, test } from "vite-plus/test";
 import { add } from "../src/commands/add";
 import { useTempTaskDir } from "./helpers";
 
-function readIndex(taskDir: string): number[] {
-  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8"));
+function readIndexOrder(taskDir: string): number[] {
+  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8")).order;
 }
 
 const { taskDir } = useTempTaskDir();
@@ -39,10 +39,10 @@ test("タスク作成後にインデックスファイルに新しいIDが末尾
   await add("タスク1", taskDir());
   await add("タスク2", taskDir());
   await add("タスク3", taskDir());
-  expect(readIndex(taskDir())).toEqual([1, 2, 3]);
+  expect(readIndexOrder(taskDir())).toEqual([1, 2, 3]);
 });
 
 test("インデックスファイルが存在しない場合は新規作成される", async () => {
   await add("タスク", taskDir());
-  expect(readIndex(taskDir())).toEqual([1]);
+  expect(readIndexOrder(taskDir())).toEqual([1]);
 });

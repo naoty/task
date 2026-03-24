@@ -14,8 +14,7 @@ export async function add(title: string, taskDir: string): Promise<{ id: number 
   writeFileSync(resolve(taskDir, `${id}.md`), content);
 
   const index = readIndex(taskDir);
-  index.push(id);
-  writeIndex(taskDir, index);
+  writeIndex(taskDir, { ...index, order: [...index.order, id] });
 
   return { id };
 }

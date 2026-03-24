@@ -10,10 +10,8 @@ export async function deleteTask(id: number, taskDir: string): Promise<{ id: num
 
   rmSync(taskFile);
 
-  writeIndex(
-    taskDir,
-    readIndex(taskDir).filter((i) => i !== id),
-  );
+  const index = readIndex(taskDir);
+  writeIndex(taskDir, { ...index, order: index.order.filter((i) => i !== id) });
 
   return { id };
 }

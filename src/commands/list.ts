@@ -11,8 +11,8 @@ export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
   const files = readdirSync(taskDir);
   const allIds = new Set(extractTaskIds(files));
 
-  const index = readIndex(taskDir);
-  const indexedIds = index.filter((id) => allIds.has(id));
+  const { order } = readIndex(taskDir);
+  const indexedIds = order.filter((id) => allIds.has(id));
   const tasks: Task[] = indexedIds.map((id) => readTask(id, taskDir));
 
   return { tasks };
