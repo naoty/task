@@ -1,17 +1,42 @@
 import { existsSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { readIndex, writeIndex } from "../index-file";
+import { type Index, readIndex, writeIndex } from "../index-file";
 
-export async function deleteTask(id: number, taskDir: string): Promise<{ id: number }> {
+function collectDescendants(id: number, index: Index): number[] {
+  const children = index.children[String(id)] ?? [];
+  return children.flatMap((childId) => [childId, ...collectDescendants(childId, index)]);
+}
+
+export async function deleteTask(id: number, taskDir: string): Promise<{ ids: number[] }> {
   const taskFile = resolve(taskDir, `${id}.md`);
   if (!existsSync(taskFile)) {
     throw new Error(`task not found: ${id}`);
   }
 
-  rmSync(taskFile);
-
   const index = readIndex(taskDir);
-  writeIndex(taskDir, { ...index, order: index.order.filter((i) => i !== id) });
+  const toDelete = new Set<number>([id, ...collectDescendants(id, index)]);
 
-  return { id };
+  // タスクファイルを削除
+  for (const deleteId of toDelete) {
+    const file = resolve(taskDir, `${deleteId}.md`);
+    if (existsSync(file)) rmSync(file);
+  }
+
+  // children を再構築: 削除されたキーと値を除去
+  const newChildren: Record<string, number[]> = {};
+  for (const [key, childIds] of Object.entries(index.children)) {
+    if (key !== "root" && toDelete.has(Number(key))) continue;
+    const filtered = childIds.filter((i) => !toDelete.has(i));
+    newChildren[key] = filtered;
+  }
+  // 空になった非ルートエントリを削除
+  for (const key of Object.keys(newChildren)) {
+    if (key !== "root" && newChildren[key].length === 0) {
+      delete newChildren[key];
+    }
+  }
+
+  writeIndex(taskDir, { ...index, children: newChildren });
+
+  return { ids: [...toDelete] };
 }
