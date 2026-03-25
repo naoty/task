@@ -41,12 +41,20 @@ const cli = cac("task");
 cli.option("-v, --version", "バージョンを表示する");
 cli.help();
 
-cli.command("add [title]", "タスクを作成する").action(async (title?: string) => {
-  if (!title) respondError("title is required", "task add <title>");
+cli
+  .command("add [title]", "タスクを作成する")
+  .option("--parent <id>", "親タスクのID")
+  .action(async (title?: string, options: { parent?: string } = {}) => {
+    if (!title) respondError("title is required", "task add <title>");
 
-  const result = await add(title, getTaskDir());
-  respondSuccess(result);
-});
+    try {
+      const parentId = options.parent !== undefined ? parseInt(options.parent, 10) : undefined;
+      const result = await add(title, getTaskDir(), parentId);
+      respondSuccess(result);
+    } catch (e) {
+      respondException(e);
+    }
+  });
 
 cli.command("next", "次にやるべきタスクを返す").action(async () => {
   const result = await next(getTaskDir());
