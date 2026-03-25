@@ -39,7 +39,7 @@ function respondException(e: unknown): never {
 const cli = cac("task");
 
 cli.option("-v, --version", "バージョンを表示する");
-cli.help();
+cli.option("-h, --help", "コマンド一覧を表示する");
 
 cli
   .command("add [title]", "タスクを作成する")
@@ -179,6 +179,25 @@ const { options, args } = cli.parse();
 if (options.version) {
   console.log(version);
   process.exit(0);
+}
+
+const subcommands = [
+  { name: "add", description: "タスクを作成する" },
+  { name: "next", description: "次にやるべきタスクを返す" },
+  { name: "list", description: "タスク一覧を表示する" },
+  { name: "archive", description: "完了タスクをアーカイブする" },
+  { name: "delete", description: "タスクを削除する" },
+  { name: "update", description: "タスクを更新する" },
+  { name: "move", description: "タスクの優先順位・親タスクを変更する" },
+  { name: "dep", description: "依存関係を管理する" },
+];
+
+if (options.help) {
+  respondSuccess({ usage: "task <subcommand>", subcommands });
+}
+
+if (args.length === 0) {
+  respondError("command is required", "task <subcommand>", { subcommands });
 }
 
 if (args[0] === "dep") {
