@@ -26,7 +26,7 @@ task move <id> [<number>] [--parent <parent-id>]
    - **`--parent <parent-id>` のみ指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の末尾に追加する。
    - **`<number>` と `--parent <parent-id>` の両方指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の `<number>` の位置に挿入する。
 4. `<number>` が1未満の場合は先頭（位置1）に挿入する。`<number>` がリストの長さを超える場合は末尾に挿入する。
-5. インデックスファイルを更新する。
+5. インデックスファイルを更新する。`move` は `children` のみを変更し、`dependencies` には影響を与えない。依存関係は移動後も保持される。
 
 ## 出力
 
