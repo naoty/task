@@ -2,27 +2,30 @@
 
 ## 概要
 
-タスクの優先順位を変更するコマンド。インデックスファイル内のタスクIDの並び順を変更することで優先順位を変更する。
+タスクの優先順位や親タスクを変更するコマンド。
 
 ## 書式
 
 ```
-task move <id> <number>
+task move <id> [<number>] [--parent <parent-id>]
 ```
 
-| 引数       | 型   | 説明                                   |
-| ---------- | ---- | -------------------------------------- |
-| `<id>`     | 整数 | 移動するタスクのID                     |
-| `<number>` | 整数 | 移動先の順番（1始まり）。1が最高優先度 |
+| 引数/オプション        | 必須 | 説明                                             |
+| ---------------------- | ---- | ------------------------------------------------ |
+| `<id>`                 | 必須 | 移動するタスクのID                               |
+| `<number>`             | 任意 | 移動先の順番（1始まり）。省略時は末尾            |
+| `--parent <parent-id>` | 任意 | 新しい親タスクのID。指定すると親タスクを変更する |
 
 ## 動作
 
 1. `<id>` に対応するタスクファイルが存在するか確認する。存在しない場合はエラー。
 2. インデックスファイルを読み込む。
-3. インデックスから `<id>` を取り除く。
-4. `<number>` の位置に `<id>` を挿入する。
-   - `<number>` が1未満の場合は先頭（位置1）に挿入する。
-   - `<number>` がインデックスの長さを超える場合は末尾に挿入する。
+3. 以下の場合分けで処理する:
+   - **`<number>` も `--parent` も省略**: `id` を現在の兄弟リストから取り除き、`children["root"]` の末尾に追加する（ルートに移動）。
+   - **`<number>` のみ指定**: タスクの兄弟リスト（`children["root"]` またはは `children[parentId]`）内で `id` を `<number>` の位置に移動する。
+   - **`--parent <parent-id>` のみ指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の末尾に追加する。
+   - **`<number>` と `--parent <parent-id>` の両方指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の `<number>` の位置に挿入する。
+4. `<number>` が1未満の場合は先頭（位置1）に挿入する。`<number>` がリストの長さを超える場合は末尾に挿入する。
 5. インデックスファイルを更新する。
 
 ## 出力
@@ -44,41 +47,24 @@ task move <id> <number>
 
 ### 異常系
 
-#### タスクが存在しない場合
-
-```json
-{
-  "ok": false,
-  "error": {
-    "message": "Task 99 not found",
-    "usage": null,
-    "retriable": false
-  }
-}
-```
-
-#### 引数が不足・不正な場合
-
-```json
-{
-  "ok": false,
-  "error": {
-    "message": "Invalid arguments",
-    "usage": "task move <id> <number>",
-    "retriable": false
-  }
-}
-```
+| 条件                                | `error.message`                               | `error.usage` | `error.retriable` |
+| ----------------------------------- | --------------------------------------------- | ------------- | ----------------- |
+| タスクが存在しない                  | `Task <id> not found`                         | `null`        | `false`           |
+| `--parent` で指定したIDが存在しない | `Task <id> not found`                         | `null`        | `false`           |
+| 循環参照になる場合                  | `Circular parent-child relationship detected` | `null`        | `false`           |
 
 ## 使用例
 
 ```
-$ task list
-{ "ok": true, "result": { "tasks": [{ "id": 3, ... }, { "id": 1, ... }, { "id": 2, ... }] } }
-
 $ task move 2 1
-{ "ok": true, "result": { "task": { "id": 2, "title": "掃除をする", "status": "todo", "path": "/home/user/.tasks/2.md" } } }
+{ "ok": true, "result": { "task": { "id": 2, ... } } }
 
-$ task list
-{ "ok": true, "result": { "tasks": [{ "id": 2, ... }, { "id": 3, ... }, { "id": 1, ... }] } }
+$ task move 3 --parent 1
+{ "ok": true, "result": { "task": { "id": 3, ... } } }
+
+$ task move 3 1 --parent 1
+{ "ok": true, "result": { "task": { "id": 3, ... } } }
+
+$ task move 3
+{ "ok": true, "result": { "task": { "id": 3, ... } } }
 ```
