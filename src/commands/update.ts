@@ -1,10 +1,28 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
+import { readIndex } from "../index-file";
+import type { Index } from "../index-file";
 import { readTask } from "../task";
 import type { Task } from "../task";
 
 const VALID_STATUSES = ["todo", "doing", "done"];
+
+function cascadeDone(id: number, index: Index, taskDir: string): void {
+  const childIds = index.children[String(id)] ?? [];
+  for (const childId of childIds) {
+    cascadeDone(childId, index, taskDir);
+    const childFile = resolve(taskDir, `${childId}.md`);
+    if (existsSync(childFile)) {
+      const content = readFileSync(childFile, "utf-8");
+      const fields = parseFrontmatter(content);
+      const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+      const body = bodyMatch ? bodyMatch[1] : "";
+      fields["status"] = "done";
+      writeFileSync(childFile, serializeFrontmatter(fields, body));
+    }
+  }
+}
 
 export async function updateTask(
   id: number,
@@ -33,6 +51,11 @@ export async function updateTask(
   }
 
   writeFileSync(taskFile, serializeFrontmatter(fields, body));
+
+  if (updates["status"] === "done") {
+    const index = readIndex(taskDir);
+    cascadeDone(id, index, taskDir);
+  }
 
   return readTask(id, taskDir);
 }
