@@ -61,6 +61,35 @@ test("子タスクも再帰的に削除する", async () => {
   expect(index.children).toEqual({ root: [] });
 });
 
+test("削除対象が他タスクから依存されている場合、dependenciesから参照を取り除く", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1, 2] }, dependencies: { "2": [1] } }),
+  );
+
+  await deleteTask(1, taskDir());
+
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
+  expect(index.dependencies).toEqual({});
+});
+
+test("削除対象が他タスクを依存している場合、dependenciesからエントリを削除する", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: タスク3\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1, 2, 3] }, dependencies: { "1": [2, 3] } }),
+  );
+
+  await deleteTask(1, taskDir());
+
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
+  expect(index.dependencies).toEqual({});
+});
+
 test("子タスクを持つ親タスクを削除すると children からキーも削除される", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: todo\n---\n");
   writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: 子タスク\nstatus: todo\n---\n");
