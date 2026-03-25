@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { readIndex, writeIndex } from "../index-file";
+import { getParentKey, readIndex, writeIndex } from "../index-file";
 import { extractTaskIds } from "../task";
 
 export async function add(
@@ -23,6 +23,9 @@ export async function add(
     const parentFile = resolve(taskDir, `${parentId}.md`);
     if (!existsSync(parentFile)) {
       throw new Error(`Task ${parentId} not found`);
+    }
+    if (getParentKey(index, parentId) === null) {
+      throw new Error(`Task ${parentId} is archived`);
     }
     const parentChildren = index.children[String(parentId)] ?? [];
     writeIndex(taskDir, {
