@@ -37,4 +37,12 @@ test("-h はコマンド一覧をJSON形式で返す", () => {
   expect(output.ok).toBe(true);
   expect(output.result.usage).toBe("task <subcommand>");
   expect(output.result.subcommands).toBeInstanceOf(Array);
+  expect(output.result.subcommands.length).toBeGreaterThan(0);
+});
+
+test("dep はサブコマンドなしでエラーを返す", () => {
+  const result = spawnSync(BINARY, ["dep"], { encoding: "utf8" });
+  const output = JSON.parse(result.stdout);
+  expect(output.ok).toBe(false);
+  expect(output.error.message).toBe("subcommand is required");
 });
