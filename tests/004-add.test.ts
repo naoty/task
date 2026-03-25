@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "vite-plus/test";
 import { add } from "../src/commands/add";
@@ -61,4 +61,16 @@ test("--parent を指定するとサブタスクとして children[parentId] に
 
 test("--parent で存在しないIDを指定するとエラーをスローする", async () => {
   await expect(add("サブタスク", taskDir(), 99)).rejects.toThrow("Task 99 not found");
+});
+
+test("--parent でアーカイブ済みタスクのIDを指定するとエラーをスローする", async () => {
+  // タスク1のファイルは存在するがインデックスには登録されていない（アーカイブ済み）
+  mkdirSync(taskDir(), { recursive: true });
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: done\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [] }, dependencies: {} }),
+  );
+
+  await expect(add("サブタスク", taskDir(), 1)).rejects.toThrow("Task 1 is archived");
 });
