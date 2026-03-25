@@ -1,7 +1,7 @@
 # ワークフロー
 1. `./build/task-linux-x64 next` で次のタスクを確認する。
 2. `./build/task-linux-x64 update <id> --status doing` でタスクを進行中に更新する。
-3. worktreeを `.claude/worktrees/` 以下に作成して、以下はworktreeで作業する。
+3. 最新の `main` ブランチからworktreeを `.claude/worktrees/` 以下に作成して、以下はworktreeで作業する。
 4. plan modeで変更の計画をコミット単位で立て、ユーザーから承認を得る。
 5. 計画したコミット単位で以下のように進める。
   a. 仕様駆動開発に沿って、まずは仕様書を作成/更新し、受け入れテストを書いて、それを満たすように実装する。
