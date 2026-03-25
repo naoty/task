@@ -136,15 +136,6 @@ cli
     }
   });
 
-cli.command("dep", "依存関係を管理する").action(() => {
-  respondError("subcommand is required", "task dep <subcommand>", {
-    subcommands: [
-      { name: "add", description: "依存関係を追加する" },
-      { name: "delete", description: "依存関係を削除する" },
-    ],
-  });
-});
-
 cli
   .command("dep add [id] [...depIds]", "依存関係を追加する")
   .action(async (id?: string, depIds: string[] = []) => {
@@ -183,9 +174,18 @@ cli
     }
   });
 
-const { options } = cli.parse();
+const { options, args } = cli.parse();
 
 if (options.version) {
   console.log(version);
   process.exit(0);
+}
+
+if (args[0] === "dep") {
+  respondError("subcommand is required", "task dep <subcommand>", {
+    subcommands: [
+      { name: "add", description: "依存関係を追加する" },
+      { name: "delete", description: "依存関係を削除する" },
+    ],
+  });
 }
