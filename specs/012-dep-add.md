@@ -18,9 +18,10 @@ task dep add <id> <dependency-id>...
 ## 動作
 
 1. インデックスファイルを読み込む。
-2. `dependencies[id]` に指定した依存先IDを追加する。
-3. すでに存在する依存関係は無視する（冪等）。
-4. インデックスファイルを保存する。
+2. 指定した依存先IDを追加することで循環依存が発生しないか確認する。発生する場合はエラー。
+3. `dependencies[id]` に指定した依存先IDを追加する。
+4. すでに存在する依存関係は無視する（冪等）。
+5. インデックスファイルを保存する。
 
 ## 出力
 
@@ -42,6 +43,19 @@ task dep add <id> <dependency-id>...
   "error": {
     "message": "id and dependency-id are required",
     "usage": "task dep add <id> <dependency-id>...",
+    "retriable": false
+  }
+}
+```
+
+#### 循環依存になる場合
+
+```json
+{
+  "ok": false,
+  "error": {
+    "message": "Circular dependency detected",
+    "usage": null,
     "retriable": false
   }
 }
