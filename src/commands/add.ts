@@ -1,9 +1,13 @@
-import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { readIndex, writeIndex } from "../index-file";
 import { extractTaskIds } from "../task";
 
-export async function add(title: string, taskDir: string): Promise<{ id: number }> {
+export async function add(
+  title: string,
+  taskDir: string,
+  parentId?: number,
+): Promise<{ id: number }> {
   mkdirSync(taskDir, { recursive: true });
 
   const files = readdirSync(taskDir);
@@ -14,7 +18,24 @@ export async function add(title: string, taskDir: string): Promise<{ id: number 
   writeFileSync(resolve(taskDir, `${id}.md`), content);
 
   const index = readIndex(taskDir);
-  writeIndex(taskDir, { ...index, order: [...index.order, id] });
+
+  if (parentId !== undefined) {
+    const parentFile = resolve(taskDir, `${parentId}.md`);
+    if (!existsSync(parentFile)) {
+      throw new Error(`Task ${parentId} not found`);
+    }
+    const parentChildren = index.children[String(parentId)] ?? [];
+    writeIndex(taskDir, {
+      ...index,
+      children: { ...index.children, [String(parentId)]: [...parentChildren, id] },
+    });
+  } else {
+    const rootChildren = index.children["root"] ?? [];
+    writeIndex(taskDir, {
+      ...index,
+      children: { ...index.children, root: [...rootChildren, id] },
+    });
+  }
 
   return { id };
 }

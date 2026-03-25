@@ -41,12 +41,20 @@ const cli = cac("task");
 cli.option("-v, --version", "バージョンを表示する");
 cli.help();
 
-cli.command("add [title]", "タスクを作成する").action(async (title?: string) => {
-  if (!title) respondError("title is required", "task add <title>");
+cli
+  .command("add [title]", "タスクを作成する")
+  .option("--parent <id>", "親タスクのID")
+  .action(async (title?: string, options: { parent?: string } = {}) => {
+    if (!title) respondError("title is required", "task add <title>");
 
-  const result = await add(title, getTaskDir());
-  respondSuccess(result);
-});
+    try {
+      const parentId = options.parent !== undefined ? parseInt(options.parent, 10) : undefined;
+      const result = await add(title, getTaskDir(), parentId);
+      respondSuccess(result);
+    } catch (e) {
+      respondException(e);
+    }
+  });
 
 cli.command("next", "次にやるべきタスクを返す").action(async () => {
   const result = await next(getTaskDir());
@@ -110,12 +118,18 @@ cli
   });
 
 cli
-  .command("move [id] [number]", "タスクの優先順位を変更する")
-  .action(async (id?: string, number?: string) => {
-    if (!id || !number) respondError("id and number are required", "task move <id> <number>");
+  .command("move [id] [number]", "タスクの優先順位・親タスクを変更する")
+  .option("--parent <parent-id>", "新しい親タスクのID")
+  .action(async (id?: string, number?: string, options: { parent?: string } = {}) => {
+    if (!id) respondError("id is required", "task move <id> [<number>] [--parent <parent-id>]");
 
     try {
-      const task = await moveTask(parseInt(id, 10), parseInt(number, 10), getTaskDir());
+      const parentId = options.parent !== undefined ? parseInt(options.parent, 10) : undefined;
+      const task = await moveTask(
+        parseInt(id, 10),
+        { number: number !== undefined ? parseInt(number, 10) : undefined, parentId },
+        getTaskDir(),
+      );
       respondSuccess({ task });
     } catch (e) {
       respondException(e);

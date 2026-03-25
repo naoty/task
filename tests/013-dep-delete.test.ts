@@ -9,7 +9,7 @@ const { taskDir } = useTempTaskDir();
 test("依存関係を削除する", async () => {
   writeFileSync(
     resolve(taskDir(), "index.json"),
-    JSON.stringify({ order: [1, 2], dependencies: { "1": [2] } }),
+    JSON.stringify({ children: { root: [1, 2] }, dependencies: { "1": [2] } }),
   );
 
   await depDelete(1, [2], taskDir());
@@ -21,7 +21,7 @@ test("依存関係を削除する", async () => {
 test("複数の依存関係を一度に削除する", async () => {
   writeFileSync(
     resolve(taskDir(), "index.json"),
-    JSON.stringify({ order: [1, 2, 3, 4], dependencies: { "1": [2, 3, 4] } }),
+    JSON.stringify({ children: { root: [1, 2, 3, 4] }, dependencies: { "1": [2, 3, 4] } }),
   );
 
   await depDelete(1, [2, 3], taskDir());
@@ -33,7 +33,7 @@ test("複数の依存関係を一度に削除する", async () => {
 test("依存関係がなくなった場合、エントリを削除する", async () => {
   writeFileSync(
     resolve(taskDir(), "index.json"),
-    JSON.stringify({ order: [1, 2], dependencies: { "1": [2] } }),
+    JSON.stringify({ children: { root: [1, 2] }, dependencies: { "1": [2] } }),
   );
 
   await depDelete(1, [2], taskDir());
@@ -45,7 +45,7 @@ test("依存関係がなくなった場合、エントリを削除する", async
 test("存在しない依存関係を削除しようとしても無視する", async () => {
   writeFileSync(
     resolve(taskDir(), "index.json"),
-    JSON.stringify({ order: [1, 2], dependencies: { "1": [2] } }),
+    JSON.stringify({ children: { root: [1, 2] }, dependencies: { "1": [2] } }),
   );
 
   await depDelete(1, [99], taskDir());
@@ -54,14 +54,14 @@ test("存在しない依存関係を削除しようとしても無視する", as
   expect(index.dependencies).toEqual({ "1": [2] });
 });
 
-test("orderフィールドを変更しない", async () => {
+test("childrenフィールドを変更しない", async () => {
   writeFileSync(
     resolve(taskDir(), "index.json"),
-    JSON.stringify({ order: [3, 1, 2], dependencies: { "1": [2] } }),
+    JSON.stringify({ children: { root: [3, 1, 2] }, dependencies: { "1": [2] } }),
   );
 
   await depDelete(1, [2], taskDir());
 
   const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
-  expect(index.order).toEqual([3, 1, 2]);
+  expect(index.children).toEqual({ root: [3, 1, 2] });
 });

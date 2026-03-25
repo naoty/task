@@ -1,11 +1,11 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "vite-plus/test";
 import { add } from "../src/commands/add";
 import { useTempTaskDir } from "./helpers";
 
-function readIndexOrder(taskDir: string): number[] {
-  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8")).order;
+function readIndexChildren(taskDir: string): Record<string, number[]> {
+  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8")).children;
 }
 
 const { taskDir } = useTempTaskDir();
@@ -35,14 +35,30 @@ test("TASK_DIRが存在しない場合は自動的に作成する", async () => 
   expect(readdirSync(nonExistentDir)).toContain("1.md");
 });
 
-test("タスク作成後にインデックスファイルに新しいIDが末尾に追加される", async () => {
+test("タスク作成後にインデックスファイルの children.root に新しいIDが末尾に追加される", async () => {
   await add("タスク1", taskDir());
   await add("タスク2", taskDir());
   await add("タスク3", taskDir());
-  expect(readIndexOrder(taskDir())).toEqual([1, 2, 3]);
+  expect(readIndexChildren(taskDir()).root).toEqual([1, 2, 3]);
 });
 
 test("インデックスファイルが存在しない場合は新規作成される", async () => {
   await add("タスク", taskDir());
-  expect(readIndexOrder(taskDir())).toEqual([1]);
+  expect(readIndexChildren(taskDir()).root).toEqual([1]);
+});
+
+test("--parent を指定するとサブタスクとして children[parentId] に追加される", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1] }, dependencies: {} }),
+  );
+
+  const result = await add("サブタスク", taskDir(), 1);
+  expect(result).toEqual({ id: 2 });
+  expect(readIndexChildren(taskDir())).toEqual({ root: [1], "1": [2] });
+});
+
+test("--parent で存在しないIDを指定するとエラーをスローする", async () => {
+  await expect(add("サブタスク", taskDir(), 99)).rejects.toThrow("Task 99 not found");
 });

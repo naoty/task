@@ -3,17 +3,24 @@ import { readIndex } from "../index-file";
 import { extractTaskIds, readTask } from "../task";
 import type { Task } from "../task";
 
-export async function list(taskDir: string): Promise<{ tasks: Task[] }> {
+type TaskWithChildren = Task & { children: TaskWithChildren[] };
+
+export async function list(taskDir: string): Promise<{ tasks: TaskWithChildren[] }> {
   if (!existsSync(taskDir)) {
     return { tasks: [] };
   }
 
   const files = readdirSync(taskDir);
   const allIds = new Set(extractTaskIds(files));
+  const index = readIndex(taskDir);
 
-  const { order } = readIndex(taskDir);
-  const indexedIds = order.filter((id) => allIds.has(id));
-  const tasks: Task[] = indexedIds.map((id) => readTask(id, taskDir));
+  function buildTree(parentKey: string): TaskWithChildren[] {
+    const ids = (index.children[parentKey] ?? []).filter((id) => allIds.has(id));
+    return ids.map((id) => ({
+      ...readTask(id, taskDir),
+      children: buildTree(String(id)),
+    })) as TaskWithChildren[];
+  }
 
-  return { tasks };
+  return { tasks: buildTree("root") };
 }
