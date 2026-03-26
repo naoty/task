@@ -85,6 +85,16 @@ test("id が存在しないタスクの場合、エラーをスローする", as
   await expect(depAdd(999, [2], taskDir())).rejects.toThrow("task not found: 999");
 });
 
+test("自己依存を追加しようとした場合、エラーをスローする", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1] }, dependencies: {} }),
+  );
+
+  await expect(depAdd(1, [1], taskDir())).rejects.toThrow("Circular dependency detected");
+});
+
 test("dependency-id が存在しないタスクの場合、エラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
   writeFileSync(

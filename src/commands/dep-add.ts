@@ -15,6 +15,10 @@ export async function depAdd(id: number, depIds: number[], taskDir: string): Pro
     }
   }
 
+  if (depIds.includes(id)) {
+    throw new Error("Circular dependency detected");
+  }
+
   const index = readIndex(taskDir);
   const key = String(id);
   const existing = new Set(index.dependencies[key] ?? []);
