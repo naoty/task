@@ -8,6 +8,11 @@ import type { Task } from "../task";
 
 const VALID_STATUSES = ["todo", "doing", "done"];
 
+const FORBIDDEN_FIELDS: Record<string, string> = {
+  parent: 'cannot update "parent": use "task move --parent <id>"',
+  dependencies: 'cannot update "dependencies": use "task dep add" or "task dep delete"',
+};
+
 function cascadeDone(id: number, index: Index, taskDir: string): void {
   const childIds = index.children[String(id)] ?? [];
   for (const childId of childIds) {
@@ -32,6 +37,12 @@ export async function updateTask(
   const taskFile = resolve(taskDir, `${id}.md`);
   if (!existsSync(taskFile)) {
     throw new Error(`task not found: ${id}`);
+  }
+
+  for (const field of Object.keys(updates)) {
+    if (field in FORBIDDEN_FIELDS) {
+      throw new Error(FORBIDDEN_FIELDS[field]);
+    }
   }
 
   for (const [field, value] of Object.entries(updates)) {

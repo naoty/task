@@ -54,6 +54,20 @@ test("タスクが存在しない場合はエラーをスローする", async ()
   );
 });
 
+test("parentフィールドを指定した場合はエラーをスローする", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
+  await expect(updateTask(1, { parent: "2" }, taskDir())).rejects.toThrow(
+    'cannot update "parent": use "task move --parent <id>"',
+  );
+});
+
+test("dependenciesフィールドを指定した場合はエラーをスローする", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
+  await expect(updateTask(1, { dependencies: "2" }, taskDir())).rejects.toThrow(
+    'cannot update "dependencies": use "task dep add" or "task dep delete"',
+  );
+});
+
 test("statusのバリデーションに失敗した場合はエラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
   await expect(updateTask(1, { status: "invalid" }, taskDir())).rejects.toThrow(
