@@ -23,10 +23,12 @@ task move <id> [<number>] [--parent <parent-id>]
 3. 以下の場合分けで処理する:
    - **`<number>` も `--parent` も省略**: `id` を現在の兄弟リストから取り除き、`children["root"]` の末尾に追加する（ルートに移動）。
    - **`<number>` のみ指定**: タスクの兄弟リスト（`children["root"]` またはは `children[parentId]`）内で `id` を `<number>` の位置に移動する。
-   - **`--parent <parent-id>` のみ指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の末尾に追加する。
-   - **`<number>` と `--parent <parent-id>` の両方指定**: 親タスクの存在確認・循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の `<number>` の位置に挿入する。
+   - **`--parent <parent-id>` のみ指定**: 親タスクの存在確認・親子関係の循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の末尾に追加する。
+   - **`<number>` と `--parent <parent-id>` の両方指定**: 親タスクの存在確認・親子関係の循環参照チェック後、`id` を現在の兄弟リストから取り除き、`children[parent-id]` の `<number>` の位置に挿入する。
 4. `<number>` が1未満の場合は先頭（位置1）に挿入する。`<number>` がリストの長さを超える場合は末尾に挿入する。
 5. インデックスファイルを更新する。`move` は `children` のみを変更し、`dependencies` には影響を与えない。依存関係は移動後も保持される。
+
+> **循環参照チェックの対象について**: `--parent` 指定時の循環参照チェックは、`children` フィールドで管理される**親子関係のみ**を対象とする。`dependencies` フィールドで管理される依存関係は対象外。
 
 ## 出力
 
@@ -51,7 +53,7 @@ task move <id> [<number>] [--parent <parent-id>]
 | ----------------------------------- | --------------------------------------------- | ------------- | ----------------- |
 | タスクが存在しない                  | `Task <id> not found`                         | `null`        | `false`           |
 | `--parent` で指定したIDが存在しない | `Task <id> not found`                         | `null`        | `false`           |
-| 循環参照になる場合                  | `Circular parent-child relationship detected` | `null`        | `false`           |
+| 親子関係の循環参照になる場合        | `Circular parent-child relationship detected` | `null`        | `false`           |
 
 ## 使用例
 
