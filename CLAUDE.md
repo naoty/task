@@ -1,7 +1,7 @@
 # ワークフロー
 
-1. `./build/task next` で次のタスクを確認する。
-2. `./build/task update <id> --status doing` でタスクを進行中に更新する。
+1. `task next` で次のタスクを確認する。
+2. `task update <id> --status doing` でタスクを進行中に更新する。
 3. 最新の `main` ブランチからworktreeを `.claude/worktrees/` 以下に作成して、以下はworktreeで作業する。
 4. plan modeで変更の計画をコミット単位で立て、ユーザーから承認を得る。
 5. 計画したコミット単位で以下のように進める。
@@ -11,7 +11,11 @@
    d. コミットする。
 6. すべてのコミットが完了したらPull Requestを作成する。
 7. ユーザーからPull Requestをmergeした連絡を受けたらworktreeを削除する。
-8. `./build/task update <id> --status done` でタスクを完了に更新する。
+8. `task update <id> --status done` でタスクを完了に更新する。
+
+# taskコマンド
+
+`./build/task` でタスクを管理する。使い方は `./build/task --help` を実行して確認すること。
 
 # ディレクトリ構成
 
