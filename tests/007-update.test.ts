@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "vite-plus/test";
-import { updateTask } from "../src/commands/update";
+import { runCli } from "../src/cli/run";
 import { writeIndex } from "../src/index-file";
 import { useTempTaskDir } from "./helpers";
 
@@ -9,15 +9,15 @@ const { taskDir } = useTempTaskDir();
 
 test("指定したフィールドを更新して保存する", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  await updateTask(1, { status: "done" }, taskDir());
+  await runCli(["update", "1", "--status", "done"], taskDir());
   const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
   expect(content).toContain("status: done");
 });
 
 test("更新後のタスクを返す", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  const result = await updateTask(1, { status: "done" }, taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["update", "1", "--status", "done"], taskDir());
+  expect(JSON.parse(output).result.task).toEqual({
     id: 1,
     title: "買い物をする",
     status: "done",
@@ -27,8 +27,11 @@ test("更新後のタスクを返す", async () => {
 
 test("複数のフィールドを同時に更新できる", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  const result = await updateTask(1, { title: "買い物と掃除をする", status: "doing" }, taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(
+    ["update", "1", "--title", "買い物と掃除をする", "--status", "doing"],
+    taskDir(),
+  );
+  expect(JSON.parse(output).result.task).toEqual({
     id: 1,
     title: "買い物と掃除をする",
     status: "doing",
@@ -38,8 +41,8 @@ test("複数のフィールドを同時に更新できる", async () => {
 
 test("未知のフィールドをそのまま保存する", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  const result = await updateTask(1, { deadline: "2026-03-31" }, taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["update", "1", "--deadline", "2026-03-31"], taskDir());
+  expect(JSON.parse(output).result.task).toEqual({
     id: 1,
     title: "買い物をする",
     status: "todo",
@@ -49,30 +52,34 @@ test("未知のフィールドをそのまま保存する", async () => {
 });
 
 test("タスクが存在しない場合はエラーをスローする", async () => {
-  await expect(updateTask(999, { status: "done" }, taskDir())).rejects.toThrow(
-    "task not found: 999",
-  );
+  const { output, exitCode } = await runCli(["update", "999", "--status", "done"], taskDir());
+  expect(exitCode).toBe(1);
+  expect(JSON.parse(output).error.message).toBe("task not found: 999");
 });
 
 test("parentフィールドを指定した場合はエラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  await expect(updateTask(1, { parent: "2" }, taskDir())).rejects.toThrow(
+  const { output, exitCode } = await runCli(["update", "1", "--parent", "2"], taskDir());
+  expect(exitCode).toBe(1);
+  expect(JSON.parse(output).error.message).toBe(
     'cannot update "parent": use "task move --parent <id>"',
   );
 });
 
 test("dependenciesフィールドを指定した場合はエラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  await expect(updateTask(1, { dependencies: "2" }, taskDir())).rejects.toThrow(
+  const { output, exitCode } = await runCli(["update", "1", "--dependencies", "2"], taskDir());
+  expect(exitCode).toBe(1);
+  expect(JSON.parse(output).error.message).toBe(
     'cannot update "dependencies": use "task dep add" or "task dep delete"',
   );
 });
 
 test("statusのバリデーションに失敗した場合はエラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
-  await expect(updateTask(1, { status: "invalid" }, taskDir())).rejects.toThrow(
-    "invalid status: invalid",
-  );
+  const { output, exitCode } = await runCli(["update", "1", "--status", "invalid"], taskDir());
+  expect(exitCode).toBe(1);
+  expect(JSON.parse(output).error.message).toBe("invalid status: invalid");
 });
 
 test("statusをdoneにすると子タスクも再帰的にdoneになる", async () => {
@@ -83,7 +90,7 @@ test("statusをdoneにすると子タスクも再帰的にdoneになる", async 
     children: { root: [1], "1": [2, 3] },
     dependencies: {},
   });
-  await updateTask(1, { status: "done" }, taskDir());
+  await runCli(["update", "1", "--status", "done"], taskDir());
   expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain("status: done");
   expect(readFileSync(resolve(taskDir(), "3.md"), "utf-8")).toContain("status: done");
 });
@@ -96,7 +103,7 @@ test("statusをdoneにすると孫タスクも再帰的にdoneになる", async 
     children: { root: [1], "1": [2], "2": [3] },
     dependencies: {},
   });
-  await updateTask(1, { status: "done" }, taskDir());
+  await runCli(["update", "1", "--status", "done"], taskDir());
   expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain("status: done");
   expect(readFileSync(resolve(taskDir(), "3.md"), "utf-8")).toContain("status: done");
 });

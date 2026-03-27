@@ -37,6 +37,7 @@ export async function runCli(
   }
 
   function respondException(e: unknown): never {
+    if (e instanceof ExitSignal) throw e;
     respondError(e instanceof Error ? e.message : String(e));
   }
 
@@ -141,43 +142,49 @@ export async function runCli(
     });
 
   cli
-    .command("dep add [id] [...depIds]", "依存関係を追加する")
-    .action(async (id?: string, depIds: string[] = []) => {
-      if (!id || depIds.length === 0) {
-        respondError("id and dependency-id are required", "task dep add <id> <dependency-id>...");
-      }
+    .command("dep [subcommand] [id] [...depIds]", "依存関係を管理する")
+    .allowUnknownOptions()
+    .action(async (subcommand?: string, id?: string, depIds: string[] = []) => {
+      if (subcommand === "add") {
+        if (!id || depIds.length === 0) {
+          respondError("id and dependency-id are required", "task dep add <id> <dependency-id>...");
+        }
 
-      try {
-        const result = await depAdd(
-          parseInt(id, 10),
-          depIds.map((d) => parseInt(d, 10)),
-          taskDir,
-        );
-        respondSuccess(result);
-      } catch (e) {
-        respondException(e);
-      }
-    });
+        try {
+          const result = await depAdd(
+            parseInt(id, 10),
+            depIds.map((d) => parseInt(d, 10)),
+            taskDir,
+          );
+          respondSuccess(result);
+        } catch (e) {
+          respondException(e);
+        }
+      } else if (subcommand === "delete") {
+        if (!id || depIds.length === 0) {
+          respondError(
+            "id and dependency-id are required",
+            "task dep delete <id> <dependency-id>...",
+          );
+        }
 
-  cli
-    .command("dep delete [id] [...depIds]", "依存関係を削除する")
-    .action(async (id?: string, depIds: string[] = []) => {
-      if (!id || depIds.length === 0) {
-        respondError(
-          "id and dependency-id are required",
-          "task dep delete <id> <dependency-id>...",
-        );
-      }
-
-      try {
-        const result = await depDelete(
-          parseInt(id, 10),
-          depIds.map((d) => parseInt(d, 10)),
-          taskDir,
-        );
-        respondSuccess(result);
-      } catch (e) {
-        respondException(e);
+        try {
+          const result = await depDelete(
+            parseInt(id, 10),
+            depIds.map((d) => parseInt(d, 10)),
+            taskDir,
+          );
+          respondSuccess(result);
+        } catch (e) {
+          respondException(e);
+        }
+      } else {
+        respondError("subcommand is required", "task dep <subcommand>", {
+          subcommands: [
+            { name: "add", description: "依存関係を追加する" },
+            { name: "delete", description: "依存関係を削除する" },
+          ],
+        });
       }
     });
 
@@ -191,15 +198,6 @@ export async function runCli(
     { name: "move", description: "タスクの優先順位・親タスクを変更する" },
     { name: "dep", description: "依存関係を管理する" },
   ];
-
-  cli.command("dep").action(() => {
-    respondError("subcommand is required", "task dep <subcommand>", {
-      subcommands: [
-        { name: "add", description: "依存関係を追加する" },
-        { name: "delete", description: "依存関係を削除する" },
-      ],
-    });
-  });
 
   cli.command("").action(() => {
     respondError("command is required", "task <subcommand>", { subcommands });
