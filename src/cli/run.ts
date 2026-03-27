@@ -8,6 +8,7 @@ import { depDelete } from "../commands/dep-delete";
 import { list } from "../commands/list";
 import { moveTask } from "../commands/move";
 import { next } from "../commands/next";
+import { serve } from "../commands/serve";
 import { updateTask } from "../commands/update";
 
 class ExitSignal {
@@ -82,6 +83,15 @@ export async function runCli(
     const result = await list(taskDir);
     respondSuccess(result);
   });
+
+  cli
+    .command("serve", "Webサーバーを起動する")
+    .option("--port <number>", "ポート番号", { default: 3000 })
+    .action(async (options: { port: number } = { port: 3000 }) => {
+      serve(options.port);
+      // サーバーは起動し続けるため、永続的に待機する
+      await new Promise<never>(() => {});
+    });
 
   cli.command("archive", "完了タスクをアーカイブする").action(async () => {
     const result = await archive(taskDir);
@@ -231,6 +241,7 @@ export async function runCli(
     { name: "update", description: "タスクを更新する" },
     { name: "move", description: "タスクの優先順位・親タスクを変更する" },
     { name: "dep", description: "依存関係を管理する" },
+    { name: "serve", description: "Webサーバーを起動する" },
   ];
 
   cli.command("").action(() => {
