@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, test } from "vite-plus/test";
+import { expect, test } from "bun:test";
 import { runCli } from "../src/cli/run";
 import { useTempTaskDir } from "./helpers";
 

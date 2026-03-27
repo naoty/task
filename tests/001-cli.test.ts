@@ -1,4 +1,4 @@
-import { expect, test } from "vite-plus/test";
+import { expect, test } from "bun:test";
 import { version } from "../package.json" with { type: "json" };
 import { runCli } from "../src/cli/run";
 
