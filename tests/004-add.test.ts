@@ -77,3 +77,15 @@ test("--parent でアーカイブ済みタスクのIDを指定するとエラー
   expect(exitCode).toBe(1);
   expect(JSON.parse(output).error.message).toBe("Task 1 is archived");
 });
+
+test("--body を指定するとfrontmatter以下に本文が書き込まれる", async () => {
+  await runCli(["add", "タスク", "--body", "本文内容"], taskDir());
+  const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
+  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n本文内容");
+});
+
+test("--body を指定しない場合はfrontmatter以下が空になる", async () => {
+  await runCli(["add", "タスク"], taskDir());
+  const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
+  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n");
+});
