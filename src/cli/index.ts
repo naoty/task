@@ -9,5 +9,5 @@ function getTaskDir(): string {
 }
 
 const { output, exitCode } = await runCli(process.argv.slice(2), getTaskDir());
-console.log(output);
+if (output) console.log(output);
 process.exit(exitCode);

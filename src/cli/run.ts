@@ -192,8 +192,21 @@ export async function runCli(
     { name: "dep", description: "依存関係を管理する" },
   ];
 
+  cli.command("dep").action(() => {
+    respondError("subcommand is required", "task dep <subcommand>", {
+      subcommands: [
+        { name: "add", description: "依存関係を追加する" },
+        { name: "delete", description: "依存関係を削除する" },
+      ],
+    });
+  });
+
+  cli.command("").action(() => {
+    respondError("command is required", "task <subcommand>", { subcommands });
+  });
+
   try {
-    const { args: parsedArgs, options: parsedOptions } = cli.parse(["node", "task", ...args], {
+    const { options: parsedOptions } = cli.parse(["node", "task", ...args], {
       run: false,
     });
 
@@ -203,19 +216,6 @@ export async function runCli(
 
     if (parsedOptions.help) {
       respondSuccess({ usage: "task <subcommand>", subcommands });
-    }
-
-    if (parsedArgs.length === 0) {
-      respondError("command is required", "task <subcommand>", { subcommands });
-    }
-
-    if (parsedArgs[0] === "dep") {
-      respondError("subcommand is required", "task dep <subcommand>", {
-        subcommands: [
-          { name: "add", description: "依存関係を追加する" },
-          { name: "delete", description: "依存関係を削除する" },
-        ],
-      });
     }
 
     await cli.runMatchedCommand();
