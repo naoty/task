@@ -1,11 +1,12 @@
+import { expect, test } from "bun:test";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, test } from "vite-plus/test";
 import { runCli } from "../src/cli/run";
 import { useTempTaskDir } from "./helpers";
 
 function readIndexChildren(taskDir: string): Record<string, number[]> {
-  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8")).children;
+  return JSON.parse(readFileSync(resolve(taskDir, "index.json"), "utf-8"))
+    .children;
 }
 
 const { taskDir } = useTempTaskDir();
@@ -48,32 +49,47 @@ test("インデックスファイルが存在しない場合は新規作成さ�
 });
 
 test("--parent を指定するとサブタスクとして children[parentId] に追加される", async () => {
-  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: todo\n---\n",
+  );
   writeFileSync(
     resolve(taskDir(), "index.json"),
     JSON.stringify({ children: { root: [1] }, dependencies: {} }),
   );
 
-  const { output } = await runCli(["add", "サブタスク", "--parent", "1"], taskDir());
+  const { output } = await runCli(
+    ["add", "サブタスク", "--parent", "1"],
+    taskDir(),
+  );
   expect(JSON.parse(output).result).toEqual({ id: 2 });
   expect(readIndexChildren(taskDir())).toEqual({ root: [1], "1": [2] });
 });
 
 test("--parent で存在しないIDを指定するとエラーをスローする", async () => {
-  const { output, exitCode } = await runCli(["add", "サブタスク", "--parent", "99"], taskDir());
+  const { output, exitCode } = await runCli(
+    ["add", "サブタスク", "--parent", "99"],
+    taskDir(),
+  );
   expect(exitCode).toBe(1);
   expect(JSON.parse(output).error.message).toBe("Task 99 not found");
 });
 
 test("--parent でアーカイブ済みタスクのIDを指定するとエラーをスローする", async () => {
   mkdirSync(taskDir(), { recursive: true });
-  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: done\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: done\n---\n",
+  );
   writeFileSync(
     resolve(taskDir(), "index.json"),
     JSON.stringify({ children: { root: [] }, dependencies: {} }),
   );
 
-  const { output, exitCode } = await runCli(["add", "サブタスク", "--parent", "1"], taskDir());
+  const { output, exitCode } = await runCli(
+    ["add", "サブタスク", "--parent", "1"],
+    taskDir(),
+  );
   expect(exitCode).toBe(1);
   expect(JSON.parse(output).error.message).toBe("Task 1 is archived");
 });

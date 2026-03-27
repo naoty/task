@@ -1,16 +1,17 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
-import { readIndex } from "../index-file";
 import type { Index } from "../index-file";
-import { readTask } from "../task";
+import { readIndex } from "../index-file";
 import type { Task } from "../task";
+import { readTask } from "../task";
 
 const VALID_STATUSES = ["todo", "doing", "done"];
 
 const FORBIDDEN_FIELDS: Record<string, string> = {
   parent: 'cannot update "parent": use "task move --parent <id>"',
-  dependencies: 'cannot update "dependencies": use "task dep add" or "task dep delete"',
+  dependencies:
+    'cannot update "dependencies": use "task dep add" or "task dep delete"',
 };
 
 function cascadeDone(id: number, index: Index, taskDir: string): void {

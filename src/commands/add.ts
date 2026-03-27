@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { getParentKey, readIndex, writeIndex } from "../index-file";
 import { serializeFrontmatter } from "../frontmatter";
+import { getParentKey, readIndex, writeIndex } from "../index-file";
 import { extractTaskIds } from "../task";
 
 export async function add(
@@ -32,7 +32,10 @@ export async function add(
     const parentChildren = index.children[String(parentId)] ?? [];
     writeIndex(taskDir, {
       ...index,
-      children: { ...index.children, [String(parentId)]: [...parentChildren, id] },
+      children: {
+        ...index.children,
+        [String(parentId)]: [...parentChildren, id],
+      },
     });
   } else {
     const rootChildren = index.children["root"] ?? [];

@@ -1,7 +1,7 @@
+import { afterEach, beforeEach } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { afterEach, beforeEach } from "vite-plus/test";
 
 export function useTempTaskDir(): { taskDir: () => string } {
   let dir: string;
