@@ -7,12 +7,14 @@
   "type": "module",
   "scripts": {
     "build": "bun build --compile src/cli/index.ts --outfile build/task",
-    "test": "bun test"
+    "test": "bun test",
+    "check": "biome check"
   },
   "dependencies": {
     "cac": "^6.7.14"
   },
   "devDependencies": {
+    "@biomejs/biome": "latest",
     "@types/bun": "latest"
   },
   "packageManager": "bun"

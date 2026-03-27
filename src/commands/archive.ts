@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { readIndex, writeIndex } from "../index-file";
-import { extractTaskIds, readTask } from "../task";
 import type { Task } from "../task";
+import { extractTaskIds, readTask } from "../task";
 
 export async function archive(taskDir: string): Promise<{ tasks: Task[] }> {
   if (!existsSync(taskDir)) {

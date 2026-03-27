@@ -30,7 +30,10 @@ export async function add(
     const parentChildren = index.children[String(parentId)] ?? [];
     writeIndex(taskDir, {
       ...index,
-      children: { ...index.children, [String(parentId)]: [...parentChildren, id] },
+      children: {
+        ...index.children,
+        [String(parentId)]: [...parentChildren, id],
+      },
     });
   } else {
     const rootChildren = index.children["root"] ?? [];
