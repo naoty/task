@@ -1,12 +1,14 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { getParentKey, readIndex, writeIndex } from "../index-file";
+import { serializeFrontmatter } from "../frontmatter";
 import { extractTaskIds } from "../task";
 
 export async function add(
   title: string,
   taskDir: string,
   parentId?: number,
+  body?: string,
 ): Promise<{ id: number }> {
   mkdirSync(taskDir, { recursive: true });
 
@@ -14,7 +16,7 @@ export async function add(
   const ids = extractTaskIds(files);
   const id = ids.length > 0 ? Math.max(...ids) + 1 : 1;
 
-  const content = `---\ntitle: ${title}\nstatus: todo\n---\n`;
+  const content = serializeFrontmatter({ title, status: "todo" }, body ?? "");
   writeFileSync(resolve(taskDir, `${id}.md`), content);
 
   const index = readIndex(taskDir);
