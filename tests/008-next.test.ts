@@ -302,8 +302,8 @@ test("子タスクでもある被依存タスクは通常通り返す", async ()
     }),
   );
 
-  const result = await next(taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["next"], taskDir());
+  expect(JSON.parse(output).result).toEqual({
     task: {
       id: 3,
       title: "タスク3",
@@ -337,8 +337,8 @@ test("子タスクが依存ブロックされた場合、親タスクを返す",
     }),
   );
 
-  const result = await next(taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["next"], taskDir());
+  expect(JSON.parse(output).result).toEqual({
     task: {
       id: 1,
       title: "タスク1",

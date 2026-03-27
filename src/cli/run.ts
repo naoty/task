@@ -52,20 +52,26 @@ export async function runCli(
   cli
     .command("add [title]", "タスクを作成する")
     .option("--parent <id>", "親タスクのID")
-    .action(async (title?: string, options: { parent?: string } = {}) => {
-      if (!title) respondError("title is required", "task add <title>");
+    .option("--body <content>", "タスクの本文")
+    .action(
+      async (
+        title?: string,
+        options: { parent?: string; body?: string } = {},
+      ) => {
+        if (!title) respondError("title is required", "task add <title>");
 
-      try {
-        const parentId =
-          options.parent !== undefined
-            ? parseInt(options.parent, 10)
-            : undefined;
-        const result = await add(title, taskDir, parentId);
-        respondSuccess(result);
-      } catch (e) {
-        respondException(e);
-      }
-    });
+        try {
+          const parentId =
+            options.parent !== undefined
+              ? parseInt(options.parent, 10)
+              : undefined;
+          const result = await add(title, taskDir, parentId, options.body);
+          respondSuccess(result);
+        } catch (e) {
+          respondException(e);
+        }
+      },
+    );
 
   cli.command("next", "次にやるべきタスクを返す").action(async () => {
     const result = await next(taskDir);
