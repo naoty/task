@@ -8,7 +8,8 @@
   "scripts": {
     "build": "bun build --compile src/cli/index.ts --outfile build/task",
     "test": "bun test",
-    "check": "biome check"
+    "check": "biome check",
+    "fix": "biome check --write"
   },
   "dependencies": {
     "cac": "^6.7.14"
