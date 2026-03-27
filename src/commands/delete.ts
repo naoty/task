@@ -36,7 +36,17 @@ export async function deleteTask(id: number, taskDir: string): Promise<{ ids: nu
     }
   }
 
-  writeIndex(taskDir, { ...index, children: newChildren });
+  // dependencies を再構築: 削除されたキーと値を除去
+  const newDependencies: Record<string, number[]> = {};
+  for (const [key, depIds] of Object.entries(index.dependencies)) {
+    if (toDelete.has(Number(key))) continue;
+    const filtered = depIds.filter((i) => !toDelete.has(i));
+    if (filtered.length > 0) {
+      newDependencies[key] = filtered;
+    }
+  }
+
+  writeIndex(taskDir, { children: newChildren, dependencies: newDependencies });
 
   return { ids: [...toDelete] };
 }

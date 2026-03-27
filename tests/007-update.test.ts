@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "vite-plus/test";
 import { updateTask } from "../src/commands/update";
+import { writeIndex } from "../src/index-file";
 import { useTempTaskDir } from "./helpers";
 
 const { taskDir } = useTempTaskDir();
@@ -53,9 +54,49 @@ test("タスクが存在しない場合はエラーをスローする", async ()
   );
 });
 
+test("parentフィールドを指定した場合はエラーをスローする", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
+  await expect(updateTask(1, { parent: "2" }, taskDir())).rejects.toThrow(
+    'cannot update "parent": use "task move --parent <id>"',
+  );
+});
+
+test("dependenciesフィールドを指定した場合はエラーをスローする", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
+  await expect(updateTask(1, { dependencies: "2" }, taskDir())).rejects.toThrow(
+    'cannot update "dependencies": use "task dep add" or "task dep delete"',
+  );
+});
+
 test("statusのバリデーションに失敗した場合はエラーをスローする", async () => {
   writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 買い物をする\nstatus: todo\n---\n");
   await expect(updateTask(1, { status: "invalid" }, taskDir())).rejects.toThrow(
     "invalid status: invalid",
   );
+});
+
+test("statusをdoneにすると子タスクも再帰的にdoneになる", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: 子タスク\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: 子タスク2\nstatus: doing\n---\n");
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2, 3] },
+    dependencies: {},
+  });
+  await updateTask(1, { status: "done" }, taskDir());
+  expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain("status: done");
+  expect(readFileSync(resolve(taskDir(), "3.md"), "utf-8")).toContain("status: done");
+});
+
+test("statusをdoneにすると孫タスクも再帰的にdoneになる", async () => {
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: 親タスク\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: 子タスク\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: 孫タスク\nstatus: todo\n---\n");
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2], "2": [3] },
+    dependencies: {},
+  });
+  await updateTask(1, { status: "done" }, taskDir());
+  expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain("status: done");
+  expect(readFileSync(resolve(taskDir(), "3.md"), "utf-8")).toContain("status: done");
 });
