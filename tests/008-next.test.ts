@@ -174,3 +174,39 @@ test("子タスクがすべて done のとき親タスクを返す", async () =>
     task: { id: 1, title: "親タスク", status: "todo", path: resolve(taskDir(), "1.md") },
   });
 });
+
+test("子タスクでもある被依存タスクは通常通り返す", async () => {
+  // children: { "root": [1, 2], "1": [3] }, dependencies: { "2": [3] }
+  // タスク3はタスク1の子であり、かつタスク2の依存先
+  // 被依存であることはタスク3自身の候補資格に影響しない
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: タスク3\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1, 2], "1": [3] }, dependencies: { "2": [3] } }),
+  );
+
+  const result = await next(taskDir());
+  expect(result).toEqual({
+    task: { id: 3, title: "タスク3", status: "todo", path: resolve(taskDir(), "3.md") },
+  });
+});
+
+test("子タスクが依存ブロックされた場合、親タスクを返す", async () => {
+  // children: { "root": [1, 2], "1": [3] }, dependencies: { "3": [2] }
+  // タスク3はタスク1の子だが、タスク2への依存が未解決でスキップされる
+  // タスク1自身は依存なしのため返す
+  writeFileSync(resolve(taskDir(), "1.md"), "---\ntitle: タスク1\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "2.md"), "---\ntitle: タスク2\nstatus: todo\n---\n");
+  writeFileSync(resolve(taskDir(), "3.md"), "---\ntitle: タスク3\nstatus: todo\n---\n");
+  writeFileSync(
+    resolve(taskDir(), "index.json"),
+    JSON.stringify({ children: { root: [1, 2], "1": [3] }, dependencies: { "3": [2] } }),
+  );
+
+  const result = await next(taskDir());
+  expect(result).toEqual({
+    task: { id: 1, title: "タスク1", status: "todo", path: resolve(taskDir(), "1.md") },
+  });
+});
