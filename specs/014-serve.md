@@ -21,7 +21,8 @@ task serve [--port <number>]
 1. 指定されたポートでHTTPサーバーを起動する。
 2. 起動後、`Listening on http://localhost:<port>` をログ出力する。
 3. `/api/*` へのリクエストはAPIハンドラーに委譲する。
-4. それ以外のすべてのリクエストにはプレースホルダーHTMLを返す。
+4. `/main.js` へのリクエストはSPAのJavaScriptを返す。
+5. それ以外のすべてのリクエストには `index.html` を返す（クライアントサイドルーティング対応）。
 
 ## APIエンドポイント
 

@@ -1,5 +1,6 @@
+import indexHtml from "../../dist/ui/index.html" with { type: "text" };
+import mainJs from "../../dist/ui/main.js" with { type: "text" };
 import { list } from "../commands/list";
-import placeholderHtml from "./placeholder.html" with { type: "text" };
 
 export function createServer(
   port: number,
@@ -21,7 +22,13 @@ export function createServer(
         return new Response("Not Found", { status: 404 });
       }
 
-      return new Response(placeholderHtml, {
+      if (url.pathname === "/main.js") {
+        return new Response(mainJs, {
+          headers: { "Content-Type": "application/javascript" },
+        });
+      }
+
+      return new Response(indexHtml, {
         headers: { "Content-Type": "text/html" },
       });
     },
