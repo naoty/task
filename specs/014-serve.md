@@ -20,8 +20,31 @@ task serve [--port <number>]
 
 1. 指定されたポートでHTTPサーバーを起動する。
 2. 起動後、`Listening on http://localhost:<port>` をログ出力する。
-3. `/api/*` へのリクエストはAPIハンドラーに委譲する（現時点では未実装）。
+3. `/api/*` へのリクエストはAPIハンドラーに委譲する。
 4. それ以外のすべてのリクエストにはプレースホルダーHTMLを返す。
+
+## APIエンドポイント
+
+### GET /api/tasks
+
+タスクの一覧をJSON形式で返す。
+
+#### レスポンス
+
+```json
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "タスク",
+      "status": "todo",
+      "children": []
+    }
+  ]
+}
+```
+
+HTTP 200 を返す。
 
 ## 出力
 

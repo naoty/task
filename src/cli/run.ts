@@ -88,7 +88,7 @@ export async function runCli(
     .command("serve", "Webサーバーを起動する")
     .option("--port <number>", "ポート番号", { default: 3000 })
     .action(async (options: { port: number } = { port: 3000 }) => {
-      serve(options.port);
+      serve(options.port, taskDir);
       // サーバーは起動し続けるため、永続的に待機する
       await new Promise<never>(() => {});
     });
