@@ -187,8 +187,8 @@ test("子タスクでもある被依存タスクは通常通り返す", async ()
     JSON.stringify({ children: { root: [1, 2], "1": [3] }, dependencies: { "2": [3] } }),
   );
 
-  const result = await next(taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["next"], taskDir());
+  expect(JSON.parse(output).result).toEqual({
     task: { id: 3, title: "タスク3", status: "todo", path: resolve(taskDir(), "3.md") },
   });
 });
@@ -205,8 +205,8 @@ test("子タスクが依存ブロックされた場合、親タスクを返す",
     JSON.stringify({ children: { root: [1, 2], "1": [3] }, dependencies: { "3": [2] } }),
   );
 
-  const result = await next(taskDir());
-  expect(result).toEqual({
+  const { output } = await runCli(["next"], taskDir());
+  expect(JSON.parse(output).result).toEqual({
     task: { id: 1, title: "タスク1", status: "todo", path: resolve(taskDir(), "1.md") },
   });
 });
