@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "strict": true,
-    "types": ["bun-types"]
+    "types": ["bun-types"],
+    "jsx": "react-jsx"
   },
   "include": ["src", "tests"]
 }

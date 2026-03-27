@@ -6,17 +6,24 @@
   },
   "type": "module",
   "scripts": {
-    "build": "bun build --compile src/cli/index.ts --outfile build/task",
+    "build:ui": "bun build src/ui/main.tsx --outdir dist/ui/ --target browser",
+    "build:bin": "bun build --compile src/cli/index.ts --outfile build/task",
+    "build": "bun run build:ui && cp src/ui/index.html dist/ui/index.html && bun run build:bin",
     "test": "bun test",
     "check": "biome check",
     "fix": "biome check --write"
   },
   "dependencies": {
-    "cac": "^6.7.14"
+    "@tanstack/react-router": "^1.168.7",
+    "cac": "^6.7.14",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   },
   "packageManager": "bun"
 }
