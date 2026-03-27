@@ -24,10 +24,9 @@
 ## 技術スタック
 
 - 言語: TypeScript
-- ランタイム: Node.js
-- パッケージ管理: pnpm
-- ツールキット: Vite+
-- Web UI: React Router（メタフレームワークとして使用し、APIサーバーも兼ねる）
+- ランタイム: bun
+- パッケージ管理: bun
+- Web UI: React + TanStack Router
 
 ## アーキテクチャ
 
