@@ -37,6 +37,7 @@ export async function runCli(
   }
 
   function respondException(e: unknown): never {
+    if (e instanceof ExitSignal) throw e;
     respondError(e instanceof Error ? e.message : String(e));
   }
 
