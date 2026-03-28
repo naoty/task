@@ -352,9 +352,13 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
   const rootOrderMap = new Map(data.rootOrder.map((id, i) => [id, i]));
   const xBuckets = new Map<number, Node[]>();
   for (const node of layouted) {
-    const rx = Math.round(node.position.x);
-    if (!xBuckets.has(rx)) xBuckets.set(rx, []);
-    xBuckets.get(rx)?.push(node);
+    const halfW =
+      typeof node.style?.width === "number"
+        ? node.style.width / 2
+        : NODE_WIDTH / 2;
+    const centerX = Math.round(node.position.x + halfW);
+    if (!xBuckets.has(centerX)) xBuckets.set(centerX, []);
+    xBuckets.get(centerX)?.push(node);
   }
   const adjustedPositions = new Map<string, { x: number; y: number }>();
   for (const [, bucket] of xBuckets) {
