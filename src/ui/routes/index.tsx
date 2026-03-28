@@ -157,6 +157,32 @@ function topoSort(childIds: string[], depEdges: GraphEdge[]): string[] {
   return result.length === childIds.length ? result : childIds;
 }
 
+function assignRanks(
+  childIds: string[],
+  depEdges: GraphEdge[],
+): Map<string, number> {
+  const ranks = new Map<string, number>();
+  const childSet = new Set(childIds);
+  for (const id of childIds) ranks.set(id, 0);
+
+  const sorted = topoSort(childIds, depEdges);
+  for (const id of sorted) {
+    for (const edge of depEdges) {
+      if (
+        edge.type === "dependency" &&
+        edge.source === id &&
+        childSet.has(edge.target)
+      ) {
+        ranks.set(
+          edge.target,
+          Math.max(ranks.get(edge.target) ?? 0, (ranks.get(id) ?? 0) + 1),
+        );
+      }
+    }
+  }
+  return ranks;
+}
+
 function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
   const parentToChildren = new Map<string, string[]>();
   const childSet = new Set<string>();
@@ -191,12 +217,60 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       let groupHeight: number;
 
       if (hasInternalDeps) {
-        // 横並び（依存関係の矢印が見えるように）
+        // カラムレイアウト（rank別に縦並び、rank間は横に並べる）
+        const ranks = assignRanks(children, data.edges);
+        const rankToChildren = new Map<number, string[]>();
+        for (const childId of children) {
+          const rank = ranks.get(childId) ?? 0;
+          if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
+          rankToChildren.get(rank)?.push(childId);
+        }
+
+        const numCols = Math.max(...ranks.values()) + 1;
+        const maxRows = Math.max(
+          ...[...rankToChildren.values()].map((v) => v.length),
+        );
+        const contentHeight =
+          maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+
         groupWidth =
-          children.length * (CHILD_WIDTH + CHILD_GAP_H) -
+          numCols * (CHILD_WIDTH + CHILD_GAP_H) -
           CHILD_GAP_H +
           GROUP_PADDING * 2;
-        groupHeight = GROUP_HEADER + CHILD_HEIGHT + GROUP_PADDING * 2;
+        groupHeight = GROUP_HEADER + contentHeight + GROUP_PADDING * 2;
+
+        rfNodes.push({
+          id: n.id,
+          type: "group",
+          data: { title: n.title, status: n.status },
+          position: { x: 0, y: 0 },
+          style: { width: groupWidth, height: groupHeight },
+        });
+
+        for (const [rank, rankChildren] of rankToChildren) {
+          const colContentHeight =
+            rankChildren.length * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+          const colOffsetY = (contentHeight - colContentHeight) / 2;
+          for (let row = 0; row < rankChildren.length; row++) {
+            const childNode = nodeMap.get(rankChildren[row]);
+            if (!childNode) continue;
+            rfNodes.push({
+              id: childNode.id,
+              type: "task",
+              data: { title: childNode.title, status: childNode.status },
+              parentId: n.id,
+              extent: "parent",
+              position: {
+                x: GROUP_PADDING + rank * (CHILD_WIDTH + CHILD_GAP_H),
+                y:
+                  GROUP_HEADER +
+                  GROUP_PADDING / 2 +
+                  colOffsetY +
+                  row * (CHILD_HEIGHT + CHILD_GAP_V),
+              },
+            });
+          }
+        }
       } else {
         // 縦並び（依存関係なし）
         groupWidth = CHILD_WIDTH + GROUP_PADDING * 2;
@@ -205,41 +279,33 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           children.length * (CHILD_HEIGHT + CHILD_GAP_V) -
           CHILD_GAP_V +
           GROUP_PADDING * 2;
-      }
 
-      rfNodes.push({
-        id: n.id,
-        type: "group",
-        data: { title: n.title, status: n.status },
-        position: { x: 0, y: 0 },
-        style: { width: groupWidth, height: groupHeight },
-      });
-
-      const orderedChildren = hasInternalDeps
-        ? topoSort(children, data.edges)
-        : children;
-      for (let i = 0; i < orderedChildren.length; i++) {
-        const childNode = nodeMap.get(orderedChildren[i]);
-        if (!childNode) continue;
         rfNodes.push({
-          id: childNode.id,
-          type: "task",
-          data: { title: childNode.title, status: childNode.status },
-          parentId: n.id,
-          extent: "parent",
-          position: hasInternalDeps
-            ? {
-                x: GROUP_PADDING + i * (CHILD_WIDTH + CHILD_GAP_H),
-                y: GROUP_HEADER + GROUP_PADDING / 2,
-              }
-            : {
-                x: GROUP_PADDING,
-                y:
-                  GROUP_HEADER +
-                  GROUP_PADDING / 2 +
-                  i * (CHILD_HEIGHT + CHILD_GAP_V),
-              },
+          id: n.id,
+          type: "group",
+          data: { title: n.title, status: n.status },
+          position: { x: 0, y: 0 },
+          style: { width: groupWidth, height: groupHeight },
         });
+
+        for (let i = 0; i < children.length; i++) {
+          const childNode = nodeMap.get(children[i]);
+          if (!childNode) continue;
+          rfNodes.push({
+            id: childNode.id,
+            type: "task",
+            data: { title: childNode.title, status: childNode.status },
+            parentId: n.id,
+            extent: "parent",
+            position: {
+              x: GROUP_PADDING,
+              y:
+                GROUP_HEADER +
+                GROUP_PADDING / 2 +
+                i * (CHILD_HEIGHT + CHILD_GAP_V),
+            },
+          });
+        }
       }
     } else {
       rfNodes.push({
