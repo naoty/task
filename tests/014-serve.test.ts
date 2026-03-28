@@ -62,3 +62,19 @@ test("/foo のような任意のパスでもindex.htmlが返る", async () => {
   const body = await res.text();
   expect(body).toContain('<div id="root">');
 });
+
+test("指定したポートが使用中の場合、次のポートで起動する", async () => {
+  const first = createServer(19990, taskDir());
+  server = createServer(19990, taskDir());
+  expect(server.port).toBe(19991);
+  first.stop();
+});
+
+test("10ポート試行してもすべて使用中の場合、エラーをスローする", async () => {
+  const servers: ReturnType<typeof createServer>[] = [];
+  for (let i = 0; i < 10; i++) {
+    servers.push(createServer(19980 + i, taskDir()));
+  }
+  expect(() => createServer(19980, taskDir())).toThrow();
+  for (const s of servers) s.stop();
+});
