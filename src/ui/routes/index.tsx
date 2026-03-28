@@ -119,6 +119,44 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   });
 }
 
+function topoSort(childIds: string[], depEdges: GraphEdge[]): string[] {
+  const inDegree = new Map<string, number>();
+  const adj = new Map<string, string[]>();
+  const childSet = new Set(childIds);
+
+  for (const id of childIds) {
+    inDegree.set(id, 0);
+    adj.set(id, []);
+  }
+
+  for (const edge of depEdges) {
+    if (
+      edge.type === "dependency" &&
+      childSet.has(edge.source) &&
+      childSet.has(edge.target)
+    ) {
+      adj.get(edge.source)?.push(edge.target);
+      inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
+    }
+  }
+
+  const queue = childIds.filter((id) => inDegree.get(id) === 0);
+  const result: string[] = [];
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    if (!node) break;
+    result.push(node);
+    for (const neighbor of adj.get(node) ?? []) {
+      const deg = (inDegree.get(neighbor) ?? 0) - 1;
+      inDegree.set(neighbor, deg);
+      if (deg === 0) queue.push(neighbor);
+    }
+  }
+
+  return result.length === childIds.length ? result : childIds;
+}
+
 function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
   const parentToChildren = new Map<string, string[]>();
   const childSet = new Set<string>();
@@ -177,8 +215,11 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         style: { width: groupWidth, height: groupHeight },
       });
 
-      for (let i = 0; i < children.length; i++) {
-        const childNode = nodeMap.get(children[i]);
+      const orderedChildren = hasInternalDeps
+        ? topoSort(children, data.edges)
+        : children;
+      for (let i = 0; i < orderedChildren.length; i++) {
+        const childNode = nodeMap.get(orderedChildren[i]);
         if (!childNode) continue;
         rfNodes.push({
           id: childNode.id,
