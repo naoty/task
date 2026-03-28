@@ -5,6 +5,11 @@ import { defineConfig } from "vite";
 export default defineConfig({
   root: "src/ui",
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
   build: {
     outDir: "../../dist/ui",
     emptyOutDir: true,
