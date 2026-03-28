@@ -17,8 +17,19 @@ export async function buildGraph(taskDir: string): Promise<GraphData> {
   }
 
   const files = readdirSync(taskDir);
-  const allIds = new Set(extractTaskIds(files));
+  const fileIds = new Set(extractTaskIds(files));
   const index = readIndex(taskDir);
+
+  // index.json に載っているIDのみ対象にする
+  const indexIds = new Set<number>();
+  for (const ids of Object.values(index.children)) {
+    for (const id of ids) indexIds.add(id);
+  }
+  for (const [key, ids] of Object.entries(index.dependencies)) {
+    indexIds.add(Number(key));
+    for (const id of ids) indexIds.add(id);
+  }
+  const allIds = new Set([...indexIds].filter((id) => fileIds.has(id)));
 
   const nodes: GraphNode[] = [];
   for (const id of allIds) {
