@@ -1,3 +1,4 @@
+import globalsCss from "../../dist/ui/globals.css" with { type: "text" };
 import indexHtml from "../../dist/ui/index.html" with { type: "text" };
 import mainJs from "../../dist/ui/main.js" with { type: "text" };
 import { list } from "../commands/list";
@@ -25,6 +26,12 @@ export function createServer(
       if (url.pathname === "/main.js") {
         return new Response(mainJs, {
           headers: { "Content-Type": "application/javascript" },
+        });
+      }
+
+      if (url.pathname === "/globals.css") {
+        return new Response(globalsCss, {
+          headers: { "Content-Type": "text/css" },
         });
       }
 
