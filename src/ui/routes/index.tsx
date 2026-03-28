@@ -363,7 +363,7 @@ export function IndexRoute() {
         nodesConnectable={false}
         elementsSelectable={false}
       >
-        <Background color="#2a2d3a" gap={24} />
+        <Background variant="lines" color="#2a2d3a" gap={24} />
       </ReactFlow>
     </div>
   );
