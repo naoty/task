@@ -17,7 +17,11 @@ type GraphEdge = {
   target: string;
   type: "parent-child" | "dependency";
 };
-type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };
+type GraphData = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  rootOrder: string[];
+};
 
 type TaskNodeData = { title: string; status: string; [key: string]: unknown };
 
@@ -343,7 +347,40 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
 
   const topLevelNodes = rfNodes.filter((n) => !n.parentId);
   const layouted = applyDagreLayout(topLevelNodes, rfEdges);
-  const positionMap = new Map(layouted.map((n) => [n.id, n.position]));
+
+  // rootOrderに従って同じx座標グループ内のノードをy座標で並び替える
+  const rootOrderMap = new Map(data.rootOrder.map((id, i) => [id, i]));
+  const xBuckets = new Map<number, Node[]>();
+  for (const node of layouted) {
+    const halfW =
+      typeof node.style?.width === "number"
+        ? node.style.width / 2
+        : NODE_WIDTH / 2;
+    const centerX = Math.round(node.position.x + halfW);
+    if (!xBuckets.has(centerX)) xBuckets.set(centerX, []);
+    xBuckets.get(centerX)?.push(node);
+  }
+  const adjustedPositions = new Map<string, { x: number; y: number }>();
+  for (const [, bucket] of xBuckets) {
+    const sorted = [...bucket].sort(
+      (a, b) =>
+        (rootOrderMap.get(a.id) ?? Infinity) -
+        (rootOrderMap.get(b.id) ?? Infinity),
+    );
+    const minY = Math.min(...bucket.map((n) => n.position.y));
+    let currentY = minY;
+    for (const node of sorted) {
+      const h =
+        typeof node.style?.height === "number"
+          ? node.style.height
+          : NODE_HEIGHT;
+      adjustedPositions.set(node.id, { x: node.position.x, y: currentY });
+      currentY += h + 40;
+    }
+  }
+  const positionMap = new Map(
+    layouted.map((n) => [n.id, adjustedPositions.get(n.id) ?? n.position]),
+  );
 
   const finalNodes = rfNodes.map((n) =>
     n.parentId ? n : { ...n, position: positionMap.get(n.id) ?? n.position },

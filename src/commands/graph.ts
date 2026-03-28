@@ -9,11 +9,15 @@ export type GraphEdge = {
   target: string;
   type: "parent-child" | "dependency";
 };
-export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };
+export type GraphData = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  rootOrder: string[];
+};
 
 export async function buildGraph(taskDir: string): Promise<GraphData> {
   if (!existsSync(taskDir)) {
-    return { nodes: [], edges: [] };
+    return { nodes: [], edges: [], rootOrder: [] };
   }
 
   const files = readdirSync(taskDir);
@@ -69,5 +73,9 @@ export async function buildGraph(taskDir: string): Promise<GraphData> {
     }
   }
 
-  return { nodes, edges };
+  const rootOrder = (index.children.root ?? [])
+    .filter((id) => allIds.has(id))
+    .map(String);
+
+  return { nodes, edges, rootOrder };
 }
