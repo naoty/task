@@ -22,9 +22,9 @@ type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };
 type TaskNodeData = { title: string; status: string; [key: string]: unknown };
 
 const statusBorderColor: Record<string, string> = {
-  todo: "#6b7280",
-  doing: "#f59e0b",
-  done: "#10b981",
+  todo: "var(--color-status-todo)",
+  doing: "var(--color-status-doing)",
+  done: "var(--color-status-done)",
 };
 
 function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
@@ -34,9 +34,9 @@ function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor }}
-        className="w-[160px] rounded-[0.5rem] bg-[#252837] border-2 px-3 py-2 flex flex-col gap-1"
+        className="w-[160px] rounded-[0.5rem] bg-surface border-2 px-3 py-2 flex flex-col gap-1"
       >
-        <span className="text-xs font-medium text-[#e2e4ed] truncate">
+        <span className="text-xs font-medium text-text truncate">
           {data.title}
         </span>
         <span
@@ -58,10 +58,10 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor, width: "100%", height: "100%" }}
-        className="rounded-[0.5rem] border-2 bg-[#252837] flex flex-col"
+        className="rounded-[0.5rem] border-2 bg-surface flex flex-col"
       >
         <div className="px-3 pt-2 pb-3 flex flex-col gap-1 items-start">
-          <span className="text-xs font-medium text-[#e2e4ed] truncate">
+          <span className="text-xs font-medium text-text truncate">
             {data.title}
           </span>
           <span
@@ -330,8 +330,15 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       id: e.id,
       source: e.source,
       target: e.target,
-      style: { stroke: "#f59e0b", strokeWidth: 1.5, strokeDasharray: "5 4" },
-      markerEnd: { type: MarkerType.ArrowClosed, color: "#f59e0b" },
+      style: {
+        stroke: "var(--color-status-doing)",
+        strokeWidth: 1.5,
+        strokeDasharray: "5 4",
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: "var(--color-status-doing)",
+      },
     }));
 
   const topLevelNodes = rfNodes.filter((n) => !n.parentId);
