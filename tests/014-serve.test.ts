@@ -1,4 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
+import { runCli } from "../src/cli/run";
 import { createServer } from "../src/server/index";
 import { useTempTaskDir } from "./helpers";
 
@@ -45,8 +46,22 @@ test("/api/graph へのリクエストはグラフデータをJSONで返す", as
   const body = await res.json();
   expect(body).toHaveProperty("nodes");
   expect(body).toHaveProperty("edges");
+  expect(body).toHaveProperty("rootOrder");
   expect(Array.isArray(body.nodes)).toBe(true);
   expect(Array.isArray(body.edges)).toBe(true);
+  expect(Array.isArray(body.rootOrder)).toBe(true);
+});
+
+test("/api/graph の rootOrder はルートタスクの優先順位順のIDリストを返す", async () => {
+  await runCli(["add", "タスクA"], taskDir());
+  await runCli(["add", "タスクB"], taskDir());
+  await runCli(["add", "タスクC"], taskDir());
+  // タスクBを先頭に移動（優先順位: B, A, C → ID: 2, 1, 3）
+  await runCli(["move", "2", "1"], taskDir());
+  server = createServer(19993, taskDir());
+  const res = await fetch("http://localhost:19993/api/graph");
+  const body = await res.json();
+  expect(body.rootOrder).toEqual(["2", "1", "3"]);
 });
 
 test("/api/other へのリクエストは 404 を返す", async () => {
