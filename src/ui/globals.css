@@ -2,7 +2,7 @@
 
 @theme {
   /* Color palette */
-  --color-bg: #0f1117;
+  --color-bg: #080a0f;
   --color-surface: #1a1d27;
   --color-border: #2a2d3a;
   --color-text: #e2e4ed;
@@ -26,6 +26,10 @@
 /* React Flow dark theme overrides */
 .react-flow {
   --xy-background-color: var(--color-bg);
+}
+
+.react-flow__node-group {
+  border: none !important;
 }
 
 .react-flow .react-flow__handle {

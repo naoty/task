@@ -1,6 +1,5 @@
 import dagre from "@dagrejs/dagre";
 import {
-  Background,
   type Edge,
   Handle,
   MarkerType,
@@ -61,7 +60,7 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
         style={{ borderColor, width: "100%", height: "100%" }}
         className="rounded-[0.5rem] border-2 bg-[#1a1d27] flex flex-col"
       >
-        <div className="px-3 pt-2 pb-3 border-b border-[#2a2d3a] flex flex-col gap-1 items-start">
+        <div className="px-3 pt-2 pb-3 flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-[#e2e4ed] truncate">
             {data.title}
           </span>
@@ -370,9 +369,7 @@ export function IndexRoute() {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-      >
-        <Background variant="lines" color="#444444" gap={24} />
-      </ReactFlow>
+      ></ReactFlow>
     </div>
   );
 }
