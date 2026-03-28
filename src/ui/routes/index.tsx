@@ -1,52 +1,263 @@
+import dagre from "@dagrejs/dagre";
+import {
+  Background,
+  type Edge,
+  Handle,
+  MarkerType,
+  type Node,
+  type NodeProps,
+  Position,
+  ReactFlow,
+} from "@xyflow/react";
 import { useEffect, useState } from "react";
 
-type Task = {
-  id: number;
-  title: string;
-  status: string;
-  children: Task[];
+type GraphNode = { id: string; title: string; status: string };
+type GraphEdge = {
+  id: string;
+  source: string;
+  target: string;
+  type: "parent-child" | "dependency";
+};
+type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };
+
+type TaskNodeData = { title: string; status: string; [key: string]: unknown };
+
+const statusBorderColor: Record<string, string> = {
+  todo: "#6b7280",
+  doing: "#f59e0b",
+  done: "#10b981",
 };
 
-const statusColors: Record<string, string> = {
-  todo: "text-status-todo bg-status-todo/10",
-  doing: "text-status-doing bg-status-doing/10",
-  done: "text-status-done bg-status-done/10",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const classes = statusColors[status] ?? statusColors.todo;
+function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
+  const borderColor = statusBorderColor[data.status] ?? statusBorderColor.todo;
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${classes}`}>
-      {status}
-    </span>
+    <>
+      <Handle type="target" position={Position.Left} />
+      <div
+        style={{ borderColor }}
+        className="w-[160px] rounded-[0.5rem] bg-[#1a1d27] border-2 px-3 py-2 flex flex-col gap-1"
+      >
+        <span className="text-xs font-medium text-[#e2e4ed] truncate">
+          {data.title}
+        </span>
+        <span
+          className="text-[10px] font-semibold uppercase"
+          style={{ color: borderColor }}
+        >
+          {data.status}
+        </span>
+      </div>
+      <Handle type="source" position={Position.Right} />
+    </>
   );
 }
 
+function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
+  const borderColor = statusBorderColor[data.status] ?? statusBorderColor.todo;
+  return (
+    <>
+      <Handle type="target" position={Position.Left} />
+      <div
+        style={{ borderColor, width: "100%", height: "100%" }}
+        className="rounded-[0.5rem] border-2 bg-[#1a1d27]/60 flex flex-col"
+      >
+        <div className="px-3 py-2 border-b border-[#2a2d3a] flex items-center gap-2">
+          <span className="text-xs font-medium text-[#e2e4ed] truncate">
+            {data.title}
+          </span>
+          <span
+            className="text-[10px] font-semibold uppercase shrink-0"
+            style={{ color: borderColor }}
+          >
+            {data.status}
+          </span>
+        </div>
+      </div>
+      <Handle type="source" position={Position.Right} />
+    </>
+  );
+}
+
+const nodeTypes = { task: TaskNode, group: GroupNode };
+
+const NODE_WIDTH = 160;
+const NODE_HEIGHT = 60;
+const CHILD_WIDTH = 160;
+const CHILD_HEIGHT = 56;
+const GROUP_PADDING = 20;
+const GROUP_HEADER = 44;
+const CHILD_GAP_H = 60;
+const CHILD_GAP_V = 12;
+
+function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: "LR", ranksep: 80, nodesep: 40 });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  for (const node of nodes) {
+    const w =
+      typeof node.style?.width === "number" ? node.style.width : NODE_WIDTH;
+    const h =
+      typeof node.style?.height === "number" ? node.style.height : NODE_HEIGHT;
+    g.setNode(node.id, { width: w, height: h });
+  }
+  for (const edge of edges) {
+    if (g.hasNode(edge.source) && g.hasNode(edge.target)) {
+      g.setEdge(edge.source, edge.target);
+    }
+  }
+
+  dagre.layout(g);
+
+  return nodes.map((node) => {
+    const { x, y } = g.node(node.id);
+    const w =
+      typeof node.style?.width === "number" ? node.style.width : NODE_WIDTH;
+    const h =
+      typeof node.style?.height === "number" ? node.style.height : NODE_HEIGHT;
+    return { ...node, position: { x: x - w / 2, y: y - h / 2 } };
+  });
+}
+
+function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
+  const parentToChildren = new Map<string, string[]>();
+  const childSet = new Set<string>();
+
+  for (const edge of data.edges) {
+    if (edge.type === "parent-child") {
+      if (!parentToChildren.has(edge.source))
+        parentToChildren.set(edge.source, []);
+      parentToChildren.get(edge.source)!.push(edge.target);
+      childSet.add(edge.target);
+    }
+  }
+
+  const nodeMap = new Map(data.nodes.map((n) => [n.id, n]));
+  const rfNodes: Node[] = [];
+
+  for (const n of data.nodes) {
+    if (childSet.has(n.id)) continue;
+
+    const children = parentToChildren.get(n.id);
+
+    if (children && children.length > 0) {
+      const childIds = new Set(children);
+      const hasInternalDeps = data.edges.some(
+        (e) =>
+          e.type === "dependency" &&
+          childIds.has(e.source) &&
+          childIds.has(e.target),
+      );
+
+      let groupWidth: number;
+      let groupHeight: number;
+
+      if (hasInternalDeps) {
+        // 横並び（依存関係の矢印が見えるように）
+        groupWidth =
+          children.length * (CHILD_WIDTH + CHILD_GAP_H) -
+          CHILD_GAP_H +
+          GROUP_PADDING * 2;
+        groupHeight = GROUP_HEADER + CHILD_HEIGHT + GROUP_PADDING * 2;
+      } else {
+        // 縦並び（依存関係なし）
+        groupWidth = CHILD_WIDTH + GROUP_PADDING * 2;
+        groupHeight =
+          GROUP_HEADER +
+          children.length * (CHILD_HEIGHT + CHILD_GAP_V) -
+          CHILD_GAP_V +
+          GROUP_PADDING * 2;
+      }
+
+      rfNodes.push({
+        id: n.id,
+        type: "group",
+        data: { title: n.title, status: n.status },
+        position: { x: 0, y: 0 },
+        style: { width: groupWidth, height: groupHeight },
+      });
+
+      for (let i = 0; i < children.length; i++) {
+        const childNode = nodeMap.get(children[i]);
+        if (!childNode) continue;
+        rfNodes.push({
+          id: childNode.id,
+          type: "task",
+          data: { title: childNode.title, status: childNode.status },
+          parentId: n.id,
+          extent: "parent",
+          position: hasInternalDeps
+            ? {
+                x: GROUP_PADDING + i * (CHILD_WIDTH + CHILD_GAP_H),
+                y: GROUP_HEADER + GROUP_PADDING / 2,
+              }
+            : {
+                x: GROUP_PADDING,
+                y:
+                  GROUP_HEADER +
+                  GROUP_PADDING / 2 +
+                  i * (CHILD_HEIGHT + CHILD_GAP_V),
+              },
+        });
+      }
+    } else {
+      rfNodes.push({
+        id: n.id,
+        type: "task",
+        data: { title: n.title, status: n.status },
+        position: { x: 0, y: 0 },
+      });
+    }
+  }
+
+  const rfEdges: Edge[] = data.edges
+    .filter((e) => e.type === "dependency")
+    .map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      style: { stroke: "#f59e0b", strokeWidth: 1.5, strokeDasharray: "5 4" },
+      markerEnd: { type: MarkerType.ArrowClosed, color: "#f59e0b" },
+    }));
+
+  const topLevelNodes = rfNodes.filter((n) => !n.parentId);
+  const layouted = applyDagreLayout(topLevelNodes, rfEdges);
+  const positionMap = new Map(layouted.map((n) => [n.id, n.position]));
+
+  const finalNodes = rfNodes.map((n) =>
+    n.parentId ? n : { ...n, position: positionMap.get(n.id) ?? n.position },
+  );
+
+  return { nodes: finalNodes, edges: rfEdges };
+}
+
 export function IndexRoute() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   useEffect(() => {
-    fetch("/api/tasks")
+    fetch("/api/graph")
       .then((r) => r.json())
-      .then((data: { tasks: Task[] }) => setTasks(data.tasks));
+      .then((data: GraphData) => {
+        const { nodes: n, edges: e } = buildNodes(data);
+        setNodes(n);
+        setEdges(e);
+      });
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg p-8">
-      <h1 className="text-2xl font-semibold text-text mb-6">Tasks</h1>
-      <ul className="space-y-2">
-        {tasks.map((task) => (
-          <li key={task.id}>
-            <a
-              href={`/tasks/${task.id}`}
-              className="flex items-center justify-between p-4 rounded-card bg-surface border border-border hover:border-accent transition-colors"
-            >
-              <span className="text-text">{task.title}</span>
-              <StatusBadge status={task.status} />
-            </a>
-          </li>
-        ))}
-      </ul>
+    <div style={{ width: "100vw", height: "100vh" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        fitView
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+      >
+        <Background color="#2a2d3a" gap={24} />
+      </ReactFlow>
     </div>
   );
 }

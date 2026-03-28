@@ -15,7 +15,9 @@
     "fix": "biome check --write"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
     "@tanstack/react-router": "^1.168.7",
+    "@xyflow/react": "^12.10.2",
     "cac": "^6.7.14",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
@@ -24,6 +26,7 @@
     "@biomejs/biome": "latest",
     "@tailwindcss/vite": "^4.2.2",
     "@types/bun": "latest",
+    "@types/dagre": "^0.7.54",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

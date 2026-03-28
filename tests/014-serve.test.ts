@@ -37,6 +37,18 @@ test("/api/tasks へのリクエストはタスク一覧をJSONで返す", async
   expect(Array.isArray(body.tasks)).toBe(true);
 });
 
+test("/api/graph へのリクエストはグラフデータをJSONで返す", async () => {
+  server = createServer(19994, taskDir());
+  const res = await fetch("http://localhost:19994/api/graph");
+  expect(res.status).toBe(200);
+  expect(res.headers.get("Content-Type")).toContain("application/json");
+  const body = await res.json();
+  expect(body).toHaveProperty("nodes");
+  expect(body).toHaveProperty("edges");
+  expect(Array.isArray(body.nodes)).toBe(true);
+  expect(Array.isArray(body.edges)).toBe(true);
+});
+
 test("/api/other へのリクエストは 404 を返す", async () => {
   server = createServer(19996, taskDir());
   const res = await fetch("http://localhost:19996/api/other");

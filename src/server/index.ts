@@ -1,6 +1,7 @@
 import indexCss from "../../dist/ui/index.css" with { type: "text" };
 import indexHtml from "../../dist/ui/index.html" with { type: "text" };
 import indexJs from "../../dist/ui/index.js" with { type: "text" };
+import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
 
 export function createServer(
@@ -14,6 +15,13 @@ export function createServer(
 
       if (url.pathname === "/api/tasks" && req.method === "GET") {
         const result = await list(taskDir);
+        return new Response(JSON.stringify(result), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      if (url.pathname === "/api/graph" && req.method === "GET") {
+        const result = await buildGraph(taskDir);
         return new Response(JSON.stringify(result), {
           headers: { "Content-Type": "application/json" },
         });
