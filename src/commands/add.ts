@@ -1,8 +1,38 @@
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
-import { serializeFrontmatter } from "../frontmatter";
+import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
+import type { Index } from "../index-file";
 import { getParentKey, readIndex, writeIndex } from "../index-file";
 import { extractTaskIds } from "../task";
+
+function revertDoneAncestors(
+  parentId: number,
+  index: Index,
+  taskDir: string,
+): void {
+  const parentFile = resolve(taskDir, `${parentId}.md`);
+  if (!existsSync(parentFile)) return;
+
+  const content = readFileSync(parentFile, "utf-8");
+  const fields = parseFrontmatter(content);
+  if (fields.status !== "done") return;
+
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const body = bodyMatch ? bodyMatch[1] : "";
+  fields.status = "doing";
+  writeFileSync(parentFile, serializeFrontmatter(fields, body));
+
+  const grandParentKey = getParentKey(index, parentId);
+  if (grandParentKey && grandParentKey !== "root") {
+    revertDoneAncestors(Number(grandParentKey), index, taskDir);
+  }
+}
 
 export async function add(
   title: string,
@@ -37,8 +67,9 @@ export async function add(
         [String(parentId)]: [...parentChildren, id],
       },
     });
+    revertDoneAncestors(parentId, index, taskDir);
   } else {
-    const rootChildren = index.children["root"] ?? [];
+    const rootChildren = index.children.root ?? [];
     writeIndex(taskDir, {
       ...index,
       children: { ...index.children, root: [...rootChildren, id] },

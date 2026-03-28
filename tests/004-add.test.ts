@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { runCli } from "../src/cli/run";
+import { writeIndex } from "../src/index-file";
 import { useTempTaskDir } from "./helpers";
 
 function readIndexChildren(taskDir: string): Record<string, number[]> {
@@ -104,4 +105,71 @@ test("--body を指定しない場合はfrontmatter以下が空になる", async
   await runCli(["add", "タスク"], taskDir());
   const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
   expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n");
+});
+
+test("doneの親タスクにサブタスクを追加すると親タスクがdoingになる", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: done\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1] },
+    dependencies: {},
+  });
+  await runCli(["add", "サブタスク", "--parent", "1"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: doing",
+  );
+});
+
+test("doneの祖父タスクにも再帰的にdoingが伝播する", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 祖父タスク\nstatus: done\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "2.md"),
+    "---\ntitle: 親タスク\nstatus: done\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2] },
+    dependencies: {},
+  });
+  await runCli(["add", "サブタスク", "--parent", "2"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain(
+    "status: doing",
+  );
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: doing",
+  );
+});
+
+test("doingの親タスクにサブタスクを追加してもステータスは変わらない", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: doing\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1] },
+    dependencies: {},
+  });
+  await runCli(["add", "サブタスク", "--parent", "1"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: doing",
+  );
+});
+
+test("todoの親タスクにサブタスクを追加してもステータスは変わらない", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: todo\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1] },
+    dependencies: {},
+  });
+  await runCli(["add", "サブタスク", "--parent", "1"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: todo",
+  );
 });
