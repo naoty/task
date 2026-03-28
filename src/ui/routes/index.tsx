@@ -61,7 +61,7 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
         style={{ borderColor, width: "100%", height: "100%" }}
         className="rounded-[0.5rem] border-2 bg-[#1a1d27]/60 flex flex-col"
       >
-        <div className="px-3 py-2 border-b border-[#2a2d3a] flex flex-col gap-1 items-start">
+        <div className="px-3 pt-2 pb-3 border-b border-[#2a2d3a] flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-[#e2e4ed] truncate">
             {data.title}
           </span>
@@ -85,7 +85,7 @@ const NODE_HEIGHT = 60;
 const CHILD_WIDTH = 160;
 const CHILD_HEIGHT = 56;
 const GROUP_PADDING = 20;
-const GROUP_HEADER = 44;
+const GROUP_HEADER = 56;
 const CHILD_GAP_H = 60;
 const CHILD_GAP_V = 12;
 
