@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
 import type { Index } from "../index-file";
-import { readIndex } from "../index-file";
+import { getParentKey, readIndex } from "../index-file";
 import type { Task } from "../task";
 import { readTask } from "../task";
 
@@ -13,6 +13,38 @@ const FORBIDDEN_FIELDS: Record<string, string> = {
   dependencies:
     'cannot update "dependencies": use "task dep add" or "task dep delete"',
 };
+
+function bubbleUp(id: number, index: Index, taskDir: string): void {
+  const parentKey = getParentKey(index, id);
+  if (!parentKey || parentKey === "root") return;
+
+  const parentId = Number(parentKey);
+  const parentFile = resolve(taskDir, `${parentId}.md`);
+  if (!existsSync(parentFile)) return;
+
+  const siblingIds = index.children[String(parentId)] ?? [];
+  const allSiblingsDone = siblingIds.every((siblingId) => {
+    const siblingFile = resolve(taskDir, `${siblingId}.md`);
+    if (!existsSync(siblingFile)) return true;
+    const siblingFields = parseFrontmatter(readFileSync(siblingFile, "utf-8"));
+    return siblingFields.status === "done";
+  });
+
+  const content = readFileSync(parentFile, "utf-8");
+  const fields = parseFrontmatter(content);
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const body = bodyMatch ? bodyMatch[1] : "";
+
+  if (allSiblingsDone && fields.status !== "done") {
+    fields.status = "done";
+    writeFileSync(parentFile, serializeFrontmatter(fields, body));
+    bubbleUp(parentId, index, taskDir);
+  } else if (!allSiblingsDone && fields.status === "todo") {
+    fields.status = "doing";
+    writeFileSync(parentFile, serializeFrontmatter(fields, body));
+    bubbleUp(parentId, index, taskDir);
+  }
+}
 
 function cascadeDone(id: number, index: Index, taskDir: string): void {
   const childIds = index.children[String(id)] ?? [];
@@ -64,9 +96,12 @@ export async function updateTask(
 
   writeFileSync(taskFile, serializeFrontmatter(fields, body));
 
-  if (updates["status"] === "done") {
+  if (updates.status === "done" || updates.status === "doing") {
     const index = readIndex(taskDir);
-    cascadeDone(id, index, taskDir);
+    if (updates.status === "done") {
+      cascadeDone(id, index, taskDir);
+    }
+    bubbleUp(id, index, taskDir);
   }
 
   return readTask(id, taskDir);
