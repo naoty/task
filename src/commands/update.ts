@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
 import type { Index } from "../index-file";
-import { readIndex } from "../index-file";
+import { getParentKey, readIndex } from "../index-file";
 import type { Task } from "../task";
 import { readTask } from "../task";
 
@@ -13,6 +13,26 @@ const FORBIDDEN_FIELDS: Record<string, string> = {
   dependencies:
     'cannot update "dependencies": use "task dep add" or "task dep delete"',
 };
+
+function bubbleUpDoing(id: number, index: Index, taskDir: string): void {
+  const parentKey = getParentKey(index, id);
+  if (!parentKey || parentKey === "root") return;
+
+  const parentId = Number(parentKey);
+  const parentFile = resolve(taskDir, `${parentId}.md`);
+  if (!existsSync(parentFile)) return;
+
+  const content = readFileSync(parentFile, "utf-8");
+  const fields = parseFrontmatter(content);
+  if (fields.status === "todo") {
+    const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+    const body = bodyMatch ? bodyMatch[1] : "";
+    fields.status = "doing";
+    writeFileSync(parentFile, serializeFrontmatter(fields, body));
+  }
+
+  bubbleUpDoing(parentId, index, taskDir);
+}
 
 function cascadeDone(id: number, index: Index, taskDir: string): void {
   const childIds = index.children[String(id)] ?? [];
@@ -64,9 +84,12 @@ export async function updateTask(
 
   writeFileSync(taskFile, serializeFrontmatter(fields, body));
 
-  if (updates["status"] === "done") {
+  if (updates.status === "done" || updates.status === "doing") {
     const index = readIndex(taskDir);
-    cascadeDone(id, index, taskDir);
+    if (updates.status === "done") {
+      cascadeDone(id, index, taskDir);
+    }
+    bubbleUpDoing(id, index, taskDir);
   }
 
   return readTask(id, taskDir);
