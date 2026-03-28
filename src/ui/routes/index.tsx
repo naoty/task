@@ -61,12 +61,12 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
         style={{ borderColor, width: "100%", height: "100%" }}
         className="rounded-[0.5rem] border-2 bg-[#1a1d27]/60 flex flex-col"
       >
-        <div className="px-3 py-2 border-b border-[#2a2d3a] flex items-center gap-2">
+        <div className="px-3 py-2 border-b border-[#2a2d3a] flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-[#e2e4ed] truncate">
             {data.title}
           </span>
           <span
-            className="text-[10px] font-semibold uppercase shrink-0"
+            className="text-[10px] font-semibold uppercase"
             style={{ color: borderColor }}
           >
             {data.status}
