@@ -1,12 +1,9 @@
-import globalsCss from "../../dist/ui/globals.css" with { type: "text" };
+import indexCss from "../../dist/ui/index.css" with { type: "text" };
 import indexHtml from "../../dist/ui/index.html" with { type: "text" };
-import mainJs from "../../dist/ui/main.js" with { type: "text" };
+import indexJs from "../../dist/ui/index.js" with { type: "text" };
 import { list } from "../commands/list";
 
-export function createServer(
-  port: number,
-  taskDir: string,
-): ReturnType<typeof Bun.serve> {
+export function createServer(port: number, taskDir: string): ReturnType<typeof Bun.serve> {
   return Bun.serve({
     port,
     async fetch(req) {
@@ -23,14 +20,14 @@ export function createServer(
         return new Response("Not Found", { status: 404 });
       }
 
-      if (url.pathname === "/main.js") {
-        return new Response(mainJs, {
+      if (url.pathname === "/index.js") {
+        return new Response(indexJs, {
           headers: { "Content-Type": "application/javascript" },
         });
       }
 
-      if (url.pathname === "/globals.css") {
-        return new Response(globalsCss, {
+      if (url.pathname === "/index.css") {
+        return new Response(indexCss, {
           headers: { "Content-Type": "text/css" },
         });
       }

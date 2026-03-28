@@ -14,9 +14,7 @@ test("依存関係を削除する", async () => {
 
   await runCli(["dep", "delete", "1", "2"], taskDir());
 
-  const index = JSON.parse(
-    readFileSync(resolve(taskDir(), "index.json"), "utf-8"),
-  );
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
   expect(index.dependencies).toEqual({});
 });
 
@@ -31,9 +29,7 @@ test("複数の依存関係を一度に削除する", async () => {
 
   await runCli(["dep", "delete", "1", "2", "3"], taskDir());
 
-  const index = JSON.parse(
-    readFileSync(resolve(taskDir(), "index.json"), "utf-8"),
-  );
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
   expect(index.dependencies).toEqual({ "1": [4] });
 });
 
@@ -45,9 +41,7 @@ test("依存関係がなくなった場合、エントリを削除する", async
 
   await runCli(["dep", "delete", "1", "2"], taskDir());
 
-  const index = JSON.parse(
-    readFileSync(resolve(taskDir(), "index.json"), "utf-8"),
-  );
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
   expect(Object.keys(index.dependencies)).not.toContain("1");
 });
 
@@ -59,9 +53,7 @@ test("存在しない依存関係を削除しようとしても無視する", as
 
   await runCli(["dep", "delete", "1", "99"], taskDir());
 
-  const index = JSON.parse(
-    readFileSync(resolve(taskDir(), "index.json"), "utf-8"),
-  );
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
   expect(index.dependencies).toEqual({ "1": [2] });
 });
 
@@ -76,8 +68,6 @@ test("childrenフィールドを変更しない", async () => {
 
   await runCli(["dep", "delete", "1", "2"], taskDir());
 
-  const index = JSON.parse(
-    readFileSync(resolve(taskDir(), "index.json"), "utf-8"),
-  );
+  const index = JSON.parse(readFileSync(resolve(taskDir(), "index.json"), "utf-8"));
   expect(index.children).toEqual({ root: [3, 1, 2] });
 });

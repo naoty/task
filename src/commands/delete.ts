@@ -4,16 +4,10 @@ import { type Index, readIndex, writeIndex } from "../index-file";
 
 function collectDescendants(id: number, index: Index): number[] {
   const children = index.children[String(id)] ?? [];
-  return children.flatMap((childId) => [
-    childId,
-    ...collectDescendants(childId, index),
-  ]);
+  return children.flatMap((childId) => [childId, ...collectDescendants(childId, index)]);
 }
 
-export async function deleteTask(
-  id: number,
-  taskDir: string,
-): Promise<{ ids: number[] }> {
+export async function deleteTask(id: number, taskDir: string): Promise<{ ids: number[] }> {
   const taskFile = resolve(taskDir, `${id}.md`);
   if (!existsSync(taskFile)) {
     throw new Error(`task not found: ${id}`);

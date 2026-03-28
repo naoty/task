@@ -20,9 +20,7 @@ export async function next(taskDir: string): Promise<{ task: Task | null }> {
 
   // 深さ優先: 子タスクを先に評価し、その後親タスクを評価する
   function findNext(parentKey: string): Task | null {
-    const ids = (index.children[parentKey] ?? []).filter((id) =>
-      allIds.has(id),
-    );
+    const ids = (index.children[parentKey] ?? []).filter((id) => allIds.has(id));
     for (const id of ids) {
       const fromChildren = findNext(String(id));
       if (fromChildren) return fromChildren;
