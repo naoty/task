@@ -8,7 +8,8 @@ export type Index = {
 
 export function readIndex(taskDir: string): Index {
   const indexPath = resolve(taskDir, "index.json");
-  if (!existsSync(indexPath)) return { children: { root: [] }, dependencies: {} };
+  if (!existsSync(indexPath))
+    return { children: { root: [] }, dependencies: {} };
   return JSON.parse(readFileSync(indexPath, "utf-8"));
 }
 
@@ -25,9 +26,14 @@ export function getParentKey(index: Index, id: number): string | null {
 }
 
 /** ancestorId の子孫に descendantId が含まれるかを検査する（循環参照チェック用） */
-export function isDescendant(index: Index, ancestorId: number, descendantId: number): boolean {
+export function isDescendant(
+  index: Index,
+  ancestorId: number,
+  descendantId: number,
+): boolean {
   const children = index.children[String(ancestorId)] ?? [];
   return children.some(
-    (childId) => childId === descendantId || isDescendant(index, childId, descendantId),
+    (childId) =>
+      childId === descendantId || isDescendant(index, childId, descendantId),
   );
 }

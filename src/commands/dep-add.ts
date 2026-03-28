@@ -2,7 +2,11 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { readIndex, writeIndex } from "../index-file";
 
-export async function depAdd(id: number, depIds: number[], taskDir: string): Promise<object> {
+export async function depAdd(
+  id: number,
+  depIds: number[],
+  taskDir: string,
+): Promise<object> {
   const taskFile = resolve(taskDir, `${id}.md`);
   if (!existsSync(taskFile)) {
     throw new Error(`task not found: ${id}`);

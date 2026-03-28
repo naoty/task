@@ -54,17 +54,25 @@ export async function runCli(
     .command("add [title]", "タスクを作成する")
     .option("--parent <id>", "親タスクのID")
     .option("--body <content>", "タスクの本文")
-    .action(async (title?: string, options: { parent?: string; body?: string } = {}) => {
-      if (!title) respondError("title is required", "task add <title>");
+    .action(
+      async (
+        title?: string,
+        options: { parent?: string; body?: string } = {},
+      ) => {
+        if (!title) respondError("title is required", "task add <title>");
 
-      try {
-        const parentId = options.parent !== undefined ? parseInt(options.parent, 10) : undefined;
-        const result = await add(title, taskDir, parentId, options.body);
-        respondSuccess(result);
-      } catch (e) {
-        respondException(e);
-      }
-    });
+        try {
+          const parentId =
+            options.parent !== undefined
+              ? parseInt(options.parent, 10)
+              : undefined;
+          const result = await add(title, taskDir, parentId, options.body);
+          respondSuccess(result);
+        } catch (e) {
+          respondException(e);
+        }
+      },
+    );
 
   cli.command("next", "次にやるべきタスクを返す").action(async () => {
     const result = await next(taskDir);
@@ -106,7 +114,10 @@ export async function runCli(
     .allowUnknownOptions()
     .action(async (id?: string, options: Record<string, unknown> = {}) => {
       if (!id) {
-        respondError("id is required", "task update <id> --<field> <value> [--<field> <value>...]");
+        respondError(
+          "id is required",
+          "task update <id> --<field> <value> [--<field> <value>...]",
+        );
       }
 
       const {
@@ -139,24 +150,37 @@ export async function runCli(
   cli
     .command("move [id] [number]", "タスクの優先順位・親タスクを変更する")
     .option("--parent <parent-id>", "新しい親タスクのID")
-    .action(async (id?: string, number?: string, options: { parent?: string } = {}) => {
-      if (!id) respondError("id is required", "task move <id> [<number>] [--parent <parent-id>]");
+    .action(
+      async (
+        id?: string,
+        number?: string,
+        options: { parent?: string } = {},
+      ) => {
+        if (!id)
+          respondError(
+            "id is required",
+            "task move <id> [<number>] [--parent <parent-id>]",
+          );
 
-      try {
-        const parentId = options.parent !== undefined ? parseInt(options.parent, 10) : undefined;
-        const task = await moveTask(
-          parseInt(id, 10),
-          {
-            number: number !== undefined ? parseInt(number, 10) : undefined,
-            parentId,
-          },
-          taskDir,
-        );
-        respondSuccess({ task });
-      } catch (e) {
-        respondException(e);
-      }
-    });
+        try {
+          const parentId =
+            options.parent !== undefined
+              ? parseInt(options.parent, 10)
+              : undefined;
+          const task = await moveTask(
+            parseInt(id, 10),
+            {
+              number: number !== undefined ? parseInt(number, 10) : undefined,
+              parentId,
+            },
+            taskDir,
+          );
+          respondSuccess({ task });
+        } catch (e) {
+          respondException(e);
+        }
+      },
+    );
 
   cli
     .command("dep [subcommand] [id] [...depIds]", "依存関係を管理する")
@@ -164,7 +188,10 @@ export async function runCli(
     .action(async (subcommand?: string, id?: string, depIds: string[] = []) => {
       if (subcommand === "add") {
         if (!id || depIds.length === 0) {
-          respondError("id and dependency-id are required", "task dep add <id> <dependency-id>...");
+          respondError(
+            "id and dependency-id are required",
+            "task dep add <id> <dependency-id>...",
+          );
         }
 
         try {

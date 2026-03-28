@@ -12,7 +12,10 @@ export function parseFrontmatter(content: string): Record<string, string> {
   return fields;
 }
 
-export function serializeFrontmatter(fields: Record<string, string>, body: string): string {
+export function serializeFrontmatter(
+  fields: Record<string, string>,
+  body: string,
+): string {
   const fm = Object.entries(fields)
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");

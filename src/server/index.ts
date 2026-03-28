@@ -3,7 +3,10 @@ import indexHtml from "../../dist/ui/index.html" with { type: "text" };
 import indexJs from "../../dist/ui/index.js" with { type: "text" };
 import { list } from "../commands/list";
 
-export function createServer(port: number, taskDir: string): ReturnType<typeof Bun.serve> {
+export function createServer(
+  port: number,
+  taskDir: string,
+): ReturnType<typeof Bun.serve> {
   return Bun.serve({
     port,
     async fetch(req) {

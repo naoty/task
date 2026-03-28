@@ -5,7 +5,9 @@ import { extractTaskIds, readTask } from "../task";
 
 type TaskWithChildren = Task & { children: TaskWithChildren[] };
 
-export async function list(taskDir: string): Promise<{ tasks: TaskWithChildren[] }> {
+export async function list(
+  taskDir: string,
+): Promise<{ tasks: TaskWithChildren[] }> {
   if (!existsSync(taskDir)) {
     return { tasks: [] };
   }
@@ -15,7 +17,9 @@ export async function list(taskDir: string): Promise<{ tasks: TaskWithChildren[]
   const index = readIndex(taskDir);
 
   function buildTree(parentKey: string): TaskWithChildren[] {
-    const ids = (index.children[parentKey] ?? []).filter((id) => allIds.has(id));
+    const ids = (index.children[parentKey] ?? []).filter((id) =>
+      allIds.has(id),
+    );
     return ids.map((id) => ({
       ...readTask(id, taskDir),
       children: buildTree(String(id)),

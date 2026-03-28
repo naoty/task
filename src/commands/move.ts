@@ -1,6 +1,11 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { getParentKey, isDescendant, readIndex, writeIndex } from "../index-file";
+import {
+  getParentKey,
+  isDescendant,
+  readIndex,
+  writeIndex,
+} from "../index-file";
 import type { Task } from "../task";
 import { readTask } from "../task";
 
@@ -9,7 +14,11 @@ type MoveOptions = {
   parentId?: number;
 };
 
-export async function moveTask(id: number, options: MoveOptions, taskDir: string): Promise<Task> {
+export async function moveTask(
+  id: number,
+  options: MoveOptions,
+  taskDir: string,
+): Promise<Task> {
   const taskFile = resolve(taskDir, `${id}.md`);
   if (!existsSync(taskFile)) {
     throw new Error(`Task ${id} not found`);
@@ -31,8 +40,13 @@ export async function moveTask(id: number, options: MoveOptions, taskDir: string
   const currentParentKey = getParentKey(index, id);
   const newChildren = { ...index.children };
   if (currentParentKey !== null) {
-    newChildren[currentParentKey] = newChildren[currentParentKey].filter((i) => i !== id);
-    if (currentParentKey !== "root" && newChildren[currentParentKey].length === 0) {
+    newChildren[currentParentKey] = newChildren[currentParentKey].filter(
+      (i) => i !== id,
+    );
+    if (
+      currentParentKey !== "root" &&
+      newChildren[currentParentKey].length === 0
+    ) {
       delete newChildren[currentParentKey];
     }
   }

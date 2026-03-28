@@ -10,7 +10,8 @@ const VALID_STATUSES = ["todo", "doing", "done"];
 
 const FORBIDDEN_FIELDS: Record<string, string> = {
   parent: 'cannot update "parent": use "task move --parent <id>"',
-  dependencies: 'cannot update "dependencies": use "task dep add" or "task dep delete"',
+  dependencies:
+    'cannot update "dependencies": use "task dep add" or "task dep delete"',
 };
 
 function cascadeDone(id: number, index: Index, taskDir: string): void {

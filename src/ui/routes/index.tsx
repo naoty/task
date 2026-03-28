@@ -16,7 +16,9 @@ const statusColors: Record<string, string> = {
 function StatusBadge({ status }: { status: string }) {
   const classes = statusColors[status] ?? statusColors.todo;
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${classes}`}>{status}</span>
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${classes}`}>
+      {status}
+    </span>
   );
 }
 
