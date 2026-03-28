@@ -14,12 +14,12 @@ task serve [--port <number>]
 
 | オプション        | 説明           | デフォルト |
 | ----------------- | -------------- | ---------- |
-| `--port <number>` | 待受ポート番号 | `3000`     |
+| `--port <number>` | 待受ポート番号 | `4979`     |
 
 ## 動作
 
-1. 指定されたポートでHTTPサーバーを起動する。
-2. 起動後、`Listening on http://localhost:<port>` をログ出力する。
+1. 指定されたポートでHTTPサーバーを起動する。指定されたポートが使用中の場合は、次のポートを順に試し、空きポートで起動する。最大10ポートまで試行する。
+2. 起動後、`Listening on http://localhost:<port>` をログ出力する（実際に使用されたポート番号を表示する）。
 3. `/api/*` へのリクエストはAPIハンドラーに委譲する。
 4. `/main.js` へのリクエストはSPAのJavaScriptを返す。
 5. それ以外のすべてのリクエストには `index.html` を返す（クライアントサイドルーティング対応）。
@@ -59,8 +59,11 @@ Listening on http://localhost:3000
 
 ```
 $ task serve
-Listening on http://localhost:3000
+Listening on http://localhost:4979
 
 $ task serve --port 8080
 Listening on http://localhost:8080
+
+$ task serve --port 4979  # 4979が使用中の場合
+Listening on http://localhost:4980
 ```
