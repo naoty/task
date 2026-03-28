@@ -6,9 +6,11 @@
   },
   "type": "module",
   "scripts": {
+    "build:css": "bunx @tailwindcss/cli -i src/ui/globals.css -o dist/ui/globals.css --minify",
     "build:ui": "bun build src/ui/main.tsx --outdir dist/ui/ --target browser",
     "build:bin": "bun build --compile src/cli/index.ts --outfile build/task",
-    "build": "bun run build:ui && cp src/ui/index.html dist/ui/index.html && bun run build:bin",
+    "build": "bun run build:css && bun run build:ui && cp src/ui/index.html dist/ui/index.html && bun run build:bin",
+    "dev:css": "bunx @tailwindcss/cli -i src/ui/globals.css -o dist/ui/globals.css --watch",
     "test": "bun test",
     "check": "biome check",
     "fix": "biome check --write"
@@ -21,9 +23,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "@tailwindcss/cli": "^4.2.2",
     "@types/bun": "latest",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.2.2"
   },
   "packageManager": "bun"
 }
