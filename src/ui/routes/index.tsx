@@ -8,9 +8,9 @@ type Task = {
 };
 
 const statusColors: Record<string, string> = {
-  todo: "text-[var(--color-status-todo)] bg-[var(--color-status-todo)]/10",
-  doing: "text-[var(--color-status-doing)] bg-[var(--color-status-doing)]/10",
-  done: "text-[var(--color-status-done)] bg-[var(--color-status-done)]/10",
+  todo: "text-status-todo bg-status-todo/10",
+  doing: "text-status-doing bg-status-doing/10",
+  done: "text-status-done bg-status-done/10",
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -32,18 +32,16 @@ export function IndexRoute() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] p-8">
-      <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-6">
-        Tasks
-      </h1>
+    <div className="min-h-screen bg-bg p-8">
+      <h1 className="text-2xl font-semibold text-text mb-6">Tasks</h1>
       <ul className="space-y-2">
         {tasks.map((task) => (
           <li key={task.id}>
             <a
               href={`/tasks/${task.id}`}
-              className="flex items-center justify-between p-4 rounded-[var(--radius-card)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+              className="flex items-center justify-between p-4 rounded-card bg-surface border border-border hover:border-accent transition-colors"
             >
-              <span className="text-[var(--color-text)]">{task.title}</span>
+              <span className="text-text">{task.title}</span>
               <StatusBadge status={task.status} />
             </a>
           </li>
