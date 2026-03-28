@@ -13,10 +13,6 @@
 7. ユーザーからPull Requestをmergeした連絡を受けたらworktreeを削除する。
 8. `task update <id> --status done` でタスクを完了に更新する。
 
-# taskコマンド
-
-`./build/task` でタスクを管理する。使い方は `./build/task --help` を実行して確認すること。
-
 # ディレクトリ構成
 
 - `specs/`: 仕様書
