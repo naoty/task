@@ -59,7 +59,7 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor, width: "100%", height: "100%" }}
-        className="rounded-[0.5rem] border-2 bg-[#1a1d27]/60 flex flex-col"
+        className="rounded-[0.5rem] border-2 bg-[#1a1d27] flex flex-col"
       >
         <div className="px-3 pt-2 pb-3 border-b border-[#2a2d3a] flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-[#e2e4ed] truncate">
@@ -244,7 +244,11 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           type: "group",
           data: { title: n.title, status: n.status },
           position: { x: 0, y: 0 },
-          style: { width: groupWidth, height: groupHeight },
+          style: {
+            width: groupWidth,
+            height: groupHeight,
+            backgroundColor: "transparent",
+          },
         });
 
         for (const [rank, rankChildren] of rankToChildren) {
@@ -285,7 +289,11 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           type: "group",
           data: { title: n.title, status: n.status },
           position: { x: 0, y: 0 },
-          style: { width: groupWidth, height: groupHeight },
+          style: {
+            width: groupWidth,
+            height: groupHeight,
+            backgroundColor: "transparent",
+          },
         });
 
         for (let i = 0; i < children.length; i++) {
@@ -363,7 +371,7 @@ export function IndexRoute() {
         nodesConnectable={false}
         elementsSelectable={false}
       >
-        <Background variant="lines" color="#2a2d3a" gap={24} />
+        <Background variant="lines" color="#444444" gap={24} />
       </ReactFlow>
     </div>
   );
