@@ -4,7 +4,6 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import { IndexRoute } from "./routes/index";
-import { TaskDetailRoute } from "./routes/tasks/$id";
 
 const rootRoute = createRootRoute();
 
@@ -14,12 +13,6 @@ const indexRoute = createRoute({
   component: IndexRoute,
 });
 
-const taskDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/tasks/$id",
-  component: TaskDetailRoute,
-});
-
 export const router = createRouter({
-  routeTree: rootRoute.addChildren([indexRoute, taskDetailRoute]),
+  routeTree: rootRoute.addChildren([indexRoute]),
 });

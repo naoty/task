@@ -23,6 +23,16 @@
   --radius-card: 0.5rem;
 }
 
+/* React Flow dark theme overrides */
+.react-flow {
+  --xy-background-color: var(--color-bg);
+}
+
+.react-flow .react-flow__handle {
+  background: transparent;
+  border: none;
+}
+
 @layer base {
   *,
   *::before,
