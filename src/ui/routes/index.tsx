@@ -362,15 +362,21 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
   }
   const adjustedPositions = new Map<string, { x: number; y: number }>();
   for (const [, bucket] of xBuckets) {
-    const ys = bucket.map((n) => n.position.y).sort((a, b) => a - b);
     const sorted = [...bucket].sort(
       (a, b) =>
         (rootOrderMap.get(a.id) ?? Infinity) -
         (rootOrderMap.get(b.id) ?? Infinity),
     );
-    sorted.forEach((node, i) => {
-      adjustedPositions.set(node.id, { x: node.position.x, y: ys[i] });
-    });
+    const minY = Math.min(...bucket.map((n) => n.position.y));
+    let currentY = minY;
+    for (const node of sorted) {
+      const h =
+        typeof node.style?.height === "number"
+          ? node.style.height
+          : NODE_HEIGHT;
+      adjustedPositions.set(node.id, { x: node.position.x, y: currentY });
+      currentY += h + 40;
+    }
   }
   const positionMap = new Map(
     layouted.map((n) => [n.id, adjustedPositions.get(n.id) ?? n.position]),
