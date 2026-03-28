@@ -173,10 +173,14 @@ test("子タスクをdoneにすると親タスクがdoingになる", async () =>
   );
   writeFileSync(
     resolve(taskDir(), "2.md"),
-    "---\ntitle: 子タスク\nstatus: todo\n---\n",
+    "---\ntitle: 子タスク1\nstatus: todo\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "3.md"),
+    "---\ntitle: 子タスク2\nstatus: todo\n---\n",
   );
   writeIndex(taskDir(), {
-    children: { root: [1], "1": [2] },
+    children: { root: [1], "1": [2, 3] },
     dependencies: {},
   });
   await runCli(["update", "2", "--status", "done"], taskDir());
@@ -225,6 +229,78 @@ test("親タスクがすでにdoingの場合は変更しない", async () => {
     dependencies: {},
   });
   await runCli(["update", "2", "--status", "doing"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: doing",
+  );
+});
+
+test("すべての子タスクをdoneにすると親タスクもdoneになる", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: doing\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "2.md"),
+    "---\ntitle: 子タスク1\nstatus: done\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "3.md"),
+    "---\ntitle: 子タスク2\nstatus: todo\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2, 3] },
+    dependencies: {},
+  });
+  await runCli(["update", "3", "--status", "done"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: done",
+  );
+});
+
+test("すべての孫タスクをdoneにすると親・祖父タスクも再帰的にdoneになる", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 祖父タスク\nstatus: doing\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "2.md"),
+    "---\ntitle: 親タスク\nstatus: doing\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "3.md"),
+    "---\ntitle: 孫タスク\nstatus: todo\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2], "2": [3] },
+    dependencies: {},
+  });
+  await runCli(["update", "3", "--status", "done"], taskDir());
+  expect(readFileSync(resolve(taskDir(), "2.md"), "utf-8")).toContain(
+    "status: done",
+  );
+  expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
+    "status: done",
+  );
+});
+
+test("兄弟タスクがdoneでない場合は親タスクをdoneにしない", async () => {
+  writeFileSync(
+    resolve(taskDir(), "1.md"),
+    "---\ntitle: 親タスク\nstatus: todo\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "2.md"),
+    "---\ntitle: 子タスク1\nstatus: todo\n---\n",
+  );
+  writeFileSync(
+    resolve(taskDir(), "3.md"),
+    "---\ntitle: 子タスク2\nstatus: todo\n---\n",
+  );
+  writeIndex(taskDir(), {
+    children: { root: [1], "1": [2, 3] },
+    dependencies: {},
+  });
+  await runCli(["update", "2", "--status", "done"], taskDir());
   expect(readFileSync(resolve(taskDir(), "1.md"), "utf-8")).toContain(
     "status: doing",
   );

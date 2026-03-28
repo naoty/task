@@ -14,7 +14,7 @@ const FORBIDDEN_FIELDS: Record<string, string> = {
     'cannot update "dependencies": use "task dep add" or "task dep delete"',
 };
 
-function bubbleUpDoing(id: number, index: Index, taskDir: string): void {
+function bubbleUp(id: number, index: Index, taskDir: string): void {
   const parentKey = getParentKey(index, id);
   if (!parentKey || parentKey === "root") return;
 
@@ -22,16 +22,28 @@ function bubbleUpDoing(id: number, index: Index, taskDir: string): void {
   const parentFile = resolve(taskDir, `${parentId}.md`);
   if (!existsSync(parentFile)) return;
 
+  const siblingIds = index.children[String(parentId)] ?? [];
+  const allSiblingsDone = siblingIds.every((siblingId) => {
+    const siblingFile = resolve(taskDir, `${siblingId}.md`);
+    if (!existsSync(siblingFile)) return true;
+    const siblingFields = parseFrontmatter(readFileSync(siblingFile, "utf-8"));
+    return siblingFields.status === "done";
+  });
+
   const content = readFileSync(parentFile, "utf-8");
   const fields = parseFrontmatter(content);
-  if (fields.status === "todo") {
-    const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-    const body = bodyMatch ? bodyMatch[1] : "";
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const body = bodyMatch ? bodyMatch[1] : "";
+
+  if (allSiblingsDone && fields.status !== "done") {
+    fields.status = "done";
+    writeFileSync(parentFile, serializeFrontmatter(fields, body));
+    bubbleUp(parentId, index, taskDir);
+  } else if (!allSiblingsDone && fields.status === "todo") {
     fields.status = "doing";
     writeFileSync(parentFile, serializeFrontmatter(fields, body));
+    bubbleUp(parentId, index, taskDir);
   }
-
-  bubbleUpDoing(parentId, index, taskDir);
 }
 
 function cascadeDone(id: number, index: Index, taskDir: string): void {
@@ -89,7 +101,7 @@ export async function updateTask(
     if (updates.status === "done") {
       cascadeDone(id, index, taskDir);
     }
-    bubbleUpDoing(id, index, taskDir);
+    bubbleUp(id, index, taskDir);
   }
 
   return readTask(id, taskDir);
