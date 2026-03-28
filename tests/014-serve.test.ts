@@ -20,9 +20,9 @@ test("/ にアクセスするとindex.htmlが返る", async () => {
   expect(body).toContain('<div id="root">');
 });
 
-test("/main.js にアクセスするとSPAのJSが返る", async () => {
+test("/index.js にアクセスするとSPAのJSが返る", async () => {
   server = createServer(19998, taskDir());
-  const res = await fetch("http://localhost:19998/main.js");
+  const res = await fetch("http://localhost:19998/index.js");
   expect(res.status).toBe(200);
   expect(res.headers.get("Content-Type")).toContain("application/javascript");
 });

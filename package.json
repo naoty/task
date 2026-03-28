@@ -6,11 +6,10 @@
   },
   "type": "module",
   "scripts": {
-    "build:css": "bunx @tailwindcss/cli -i src/ui/globals.css -o dist/ui/globals.css --minify",
-    "build:ui": "bun build src/ui/main.tsx --outdir dist/ui/ --target browser",
+    "build:ui": "vite build",
     "build:bin": "bun build --compile src/cli/index.ts --outfile build/task",
-    "build": "bun run build:css && bun run build:ui && cp src/ui/index.html dist/ui/index.html && bun run build:bin",
-    "dev:css": "bunx @tailwindcss/cli -i src/ui/globals.css -o dist/ui/globals.css --watch",
+    "build": "bun run build:ui && bun run build:bin",
+    "dev": "vite",
     "test": "bun test",
     "check": "biome check",
     "fix": "biome check --write"
@@ -23,11 +22,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
-    "@tailwindcss/cli": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.2",
     "@types/bun": "latest",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.2"
+    "@vitejs/plugin-react": "^6.0.1",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.3"
   },
   "packageManager": "bun"
 }
