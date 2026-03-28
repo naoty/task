@@ -34,7 +34,7 @@ function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor }}
-        className="w-[160px] rounded-[0.5rem] bg-[#1a1d27] border-2 px-3 py-2 flex flex-col gap-1"
+        className="w-[160px] rounded-[0.5rem] bg-[#252837] border-2 px-3 py-2 flex flex-col gap-1"
       >
         <span className="text-xs font-medium text-[#e2e4ed] truncate">
           {data.title}
@@ -58,7 +58,7 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor, width: "100%", height: "100%" }}
-        className="rounded-[0.5rem] border-2 bg-[#1a1d27] flex flex-col"
+        className="rounded-[0.5rem] border-2 bg-[#252837] flex flex-col"
       >
         <div className="px-3 pt-2 pb-3 flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-[#e2e4ed] truncate">
