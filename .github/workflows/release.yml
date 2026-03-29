@@ -6,10 +6,8 @@ on:
       - 'v*.*.*'
 
 jobs:
-  release:
+  test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout
@@ -23,14 +21,105 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build
-        run: bun run build
+      - name: Build UI
+        run: bun run build:ui
 
       - name: Test
         run: bun test
 
       - name: Check
         run: bun run check
+
+  build-linux:
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build
+        run: |
+          bun build --compile --target=bun-linux-x64 src/cli/index.ts --outfile build/task-linux-x64
+          bun build --compile --target=bun-linux-arm64 src/cli/index.ts --outfile build/task-linux-arm64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-bins
+          path: build/task-linux-*
+
+  build-darwin:
+    needs: [test]
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build
+        run: |
+          bun build --compile --target=bun-darwin-x64 src/cli/index.ts --outfile build/task-darwin-x64
+          bun build --compile --target=bun-darwin-arm64 src/cli/index.ts --outfile build/task-darwin-arm64
+
+      - name: Sign
+        run: |
+          cat > entitlements.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>com.apple.security.cs.allow-jit</key>
+            <true/>
+            <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          codesign --entitlements entitlements.plist --sign - build/task-darwin-x64 --force
+          codesign --entitlements entitlements.plist --sign - build/task-darwin-arm64 --force
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: darwin-bins
+          path: build/task-darwin-*
+
+  release:
+    needs: [build-linux, build-darwin]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-bins
+          path: build
+
+      - name: Download Darwin artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: darwin-bins
+          path: build
 
       - name: Extract release notes
         run: |
