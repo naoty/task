@@ -80,7 +80,10 @@ git tag v<version>
 
 # pushとGitHub Release作成
 git push origin main --tags
-gh release create v<version> --title "v<version>" --notes-file <(git log <last-tag>..HEAD --pretty=format:"- %s")
+
+# CHANGELOG.md から該当バージョンのセクションを抜き出してリリースノートに使う
+awk '/^## \[<version>\]/{found=1; next} found && /^## \[/{exit} found{print}' CHANGELOG.md | \
+  gh release create v<version> --title "v<version>" --notes-file -
 ```
 
 ## 注意事項
