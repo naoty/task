@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -30,6 +32,19 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Extract release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md > release_notes.txt
+
       - name: Create GitHub Release
-        # TODO: タスク #50 で実装
-        run: echo "TODO: Upload to GitHub Releases (#50)"
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release_notes.txt \
+            build/task-linux-x64 \
+            build/task-linux-arm64 \
+            build/task-darwin-x64 \
+            build/task-darwin-arm64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
