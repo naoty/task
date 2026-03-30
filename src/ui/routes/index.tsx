@@ -97,7 +97,7 @@ const nodeTypes = { task: TaskNode, group: GroupNode };
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 60;
 const CHILD_WIDTH = 160;
-const CHILD_HEIGHT = 56;
+const CHILD_HEIGHT = 64;
 const GROUP_PADDING = 20;
 const GROUP_HEADER = 56;
 const CHILD_GAP_H = 60;
@@ -228,7 +228,7 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
     );
 
     if (hasInternalDeps) {
-      // カラムレイアウト: 子は固定サイズで計算
+      // カラムレイアウト: 列ごとの実際の高さを使って計算
       const ranks = assignRanks(children, data.edges);
       const rankToChildren = new Map<number, string[]>();
       for (const childId of children) {
@@ -237,14 +237,21 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         rankToChildren.get(rank)?.push(childId);
       }
       const numCols = Math.max(...ranks.values()) + 1;
-      const maxRows = Math.max(
-        ...[...rankToChildren.values()].map((v) => v.length),
+      const maxChildWidth = Math.max(
+        ...children.map((id) => getNodeSize(id).width),
       );
-      const contentHeight =
-        maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+      const contentHeight = Math.max(
+        ...[...rankToChildren.values()].map((rankChildren) => {
+          const heights = rankChildren.map((id) => getNodeSize(id).height);
+          return (
+            heights.reduce((sum, h) => sum + h, 0) +
+            (rankChildren.length - 1) * CHILD_GAP_V
+          );
+        }),
+      );
       return {
         width:
-          numCols * (CHILD_WIDTH + CHILD_GAP_H) -
+          numCols * (maxChildWidth + CHILD_GAP_H) -
           CHILD_GAP_H +
           GROUP_PADDING * 2,
         height: GROUP_HEADER + contentHeight + GROUP_PADDING * 2,
@@ -315,24 +322,31 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
         rankToChildren.get(rank)?.push(childId);
       }
-      const maxRows = Math.max(
-        ...[...rankToChildren.values()].map((v) => v.length),
+      const maxChildWidth = Math.max(
+        ...children.map((id) => getNodeSize(id).width),
       );
-      const contentHeight =
-        maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+      const contentHeight = Math.max(
+        ...[...rankToChildren.values()].map((rankChildren) => {
+          const heights = rankChildren.map((id) => getNodeSize(id).height);
+          return (
+            heights.reduce((sum, h) => sum + h, 0) +
+            (rankChildren.length - 1) * CHILD_GAP_V
+          );
+        }),
+      );
       for (const [rank, rankChildren] of rankToChildren) {
+        const colSizes = rankChildren.map((id) => getNodeSize(id));
         const colContentHeight =
-          rankChildren.length * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+          colSizes.reduce((sum, s) => sum + s.height, 0) +
+          (rankChildren.length - 1) * CHILD_GAP_V;
         const colOffsetY = (contentHeight - colContentHeight) / 2;
+        let itemY = GROUP_HEADER + GROUP_PADDING / 2 + colOffsetY;
         for (let row = 0; row < rankChildren.length; row++) {
           processNode(rankChildren[row], nodeId, {
-            x: GROUP_PADDING + rank * (CHILD_WIDTH + CHILD_GAP_H),
-            y:
-              GROUP_HEADER +
-              GROUP_PADDING / 2 +
-              colOffsetY +
-              row * (CHILD_HEIGHT + CHILD_GAP_V),
+            x: GROUP_PADDING + rank * (maxChildWidth + CHILD_GAP_H),
+            y: itemY,
           });
+          itemY += colSizes[row].height + CHILD_GAP_V;
         }
       }
     } else {
