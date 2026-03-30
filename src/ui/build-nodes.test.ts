@@ -8,7 +8,7 @@ import {
   GROUP_HEADER,
   GROUP_PADDING,
   type GraphData,
-} from "../src/ui/build-nodes";
+} from "./build-nodes";
 
 // テストデータ作成ヘルパー
 function node(id: string, title = `Task ${id}`, status = "todo") {
