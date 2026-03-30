@@ -23,7 +23,12 @@ type GraphData = {
   rootOrder: string[];
 };
 
-type TaskNodeData = { title: string; status: string; [key: string]: unknown };
+type TaskNodeData = {
+  id: string;
+  title: string;
+  status: string;
+  [key: string]: unknown;
+};
 
 const statusBorderColor: Record<string, string> = {
   todo: "var(--color-status-todo)",
@@ -38,7 +43,7 @@ function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor }}
-        className="w-[160px] rounded-[0.5rem] bg-surface border-2 px-3 py-2 flex flex-col gap-1"
+        className="w-[160px] rounded-[0.5rem] bg-surface border-2 p-3 flex flex-col gap-1 relative"
       >
         <span className="text-xs font-medium text-text truncate">
           {data.title}
@@ -48,6 +53,9 @@ function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
           style={{ color: borderColor }}
         >
           {data.status}
+        </span>
+        <span className="absolute bottom-1 right-2 text-[9px] text-text/40">
+          #{data.id}
         </span>
       </div>
       <Handle type="source" position={Position.Right} />
@@ -62,9 +70,9 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div
         style={{ borderColor, width: "100%", height: "100%" }}
-        className="rounded-[0.5rem] border-2 bg-surface flex flex-col"
+        className="rounded-[0.5rem] border-2 bg-surface flex flex-col relative"
       >
-        <div className="px-3 pt-2 pb-3 flex flex-col gap-1 items-start">
+        <div className="p-3 flex flex-col gap-1 items-start">
           <span className="text-xs font-medium text-text truncate">
             {data.title}
           </span>
@@ -75,6 +83,9 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
             {data.status}
           </span>
         </div>
+        <span className="absolute bottom-1 right-2 text-[9px] text-text/40">
+          #{data.id}
+        </span>
       </div>
       <Handle type="source" position={Position.Right} />
     </>
@@ -245,7 +256,7 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         rfNodes.push({
           id: n.id,
           type: "group",
-          data: { title: n.title, status: n.status },
+          data: { id: n.id, title: n.title, status: n.status },
           position: { x: 0, y: 0 },
           style: {
             width: groupWidth,
@@ -264,7 +275,11 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
             rfNodes.push({
               id: childNode.id,
               type: "task",
-              data: { title: childNode.title, status: childNode.status },
+              data: {
+                id: childNode.id,
+                title: childNode.title,
+                status: childNode.status,
+              },
               parentId: n.id,
               extent: "parent",
               position: {
@@ -290,7 +305,7 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         rfNodes.push({
           id: n.id,
           type: "group",
-          data: { title: n.title, status: n.status },
+          data: { id: n.id, title: n.title, status: n.status },
           position: { x: 0, y: 0 },
           style: {
             width: groupWidth,
@@ -305,7 +320,11 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           rfNodes.push({
             id: childNode.id,
             type: "task",
-            data: { title: childNode.title, status: childNode.status },
+            data: {
+              id: childNode.id,
+              title: childNode.title,
+              status: childNode.status,
+            },
             parentId: n.id,
             extent: "parent",
             position: {
@@ -322,7 +341,7 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       rfNodes.push({
         id: n.id,
         type: "task",
-        data: { title: n.title, status: n.status },
+        data: { id: n.id, title: n.title, status: n.status },
         position: { x: 0, y: 0 },
       });
     }
