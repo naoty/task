@@ -205,7 +205,7 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
     if (edge.type === "parent-child") {
       if (!parentToChildren.has(edge.source))
         parentToChildren.set(edge.source, []);
-      parentToChildren.get(edge.source)!.push(edge.target);
+      parentToChildren.get(edge.source)?.push(edge.target);
       childSet.add(edge.target);
     }
   }
@@ -213,137 +213,141 @@ function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
   const nodeMap = new Map(data.nodes.map((n) => [n.id, n]));
   const rfNodes: Node[] = [];
 
-  for (const n of data.nodes) {
-    if (childSet.has(n.id)) continue;
+  function getNodeSize(nodeId: string): { width: number; height: number } {
+    const children = parentToChildren.get(nodeId) ?? [];
+    if (children.length === 0) {
+      return { width: CHILD_WIDTH, height: CHILD_HEIGHT };
+    }
 
-    const children = parentToChildren.get(n.id);
+    const childIds = new Set(children);
+    const hasInternalDeps = data.edges.some(
+      (e) =>
+        e.type === "dependency" &&
+        childIds.has(e.source) &&
+        childIds.has(e.target),
+    );
 
-    if (children && children.length > 0) {
-      const childIds = new Set(children);
-      const hasInternalDeps = data.edges.some(
-        (e) =>
-          e.type === "dependency" &&
-          childIds.has(e.source) &&
-          childIds.has(e.target),
+    if (hasInternalDeps) {
+      // カラムレイアウト: 子は固定サイズで計算
+      const ranks = assignRanks(children, data.edges);
+      const rankToChildren = new Map<number, string[]>();
+      for (const childId of children) {
+        const rank = ranks.get(childId) ?? 0;
+        if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
+        rankToChildren.get(rank)?.push(childId);
+      }
+      const numCols = Math.max(...ranks.values()) + 1;
+      const maxRows = Math.max(
+        ...[...rankToChildren.values()].map((v) => v.length),
       );
-
-      let groupWidth: number;
-      let groupHeight: number;
-
-      if (hasInternalDeps) {
-        // カラムレイアウト（rank別に縦並び、rank間は横に並べる）
-        const ranks = assignRanks(children, data.edges);
-        const rankToChildren = new Map<number, string[]>();
-        for (const childId of children) {
-          const rank = ranks.get(childId) ?? 0;
-          if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
-          rankToChildren.get(rank)?.push(childId);
-        }
-
-        const numCols = Math.max(...ranks.values()) + 1;
-        const maxRows = Math.max(
-          ...[...rankToChildren.values()].map((v) => v.length),
-        );
-        const contentHeight =
-          maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
-
-        groupWidth =
+      const contentHeight =
+        maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+      return {
+        width:
           numCols * (CHILD_WIDTH + CHILD_GAP_H) -
           CHILD_GAP_H +
-          GROUP_PADDING * 2;
-        groupHeight = GROUP_HEADER + contentHeight + GROUP_PADDING * 2;
+          GROUP_PADDING * 2,
+        height: GROUP_HEADER + contentHeight + GROUP_PADDING * 2,
+      };
+    } else {
+      // 縦並び: 子のサイズを再帰的に計算
+      const childSizes = children.map((id) => getNodeSize(id));
+      const maxChildWidth = Math.max(...childSizes.map((s) => s.width));
+      const totalChildHeight =
+        childSizes.reduce((sum, s) => sum + s.height, 0) +
+        (children.length - 1) * CHILD_GAP_V;
+      return {
+        width: maxChildWidth + GROUP_PADDING * 2,
+        height: GROUP_HEADER + totalChildHeight + GROUP_PADDING * 2,
+      };
+    }
+  }
 
-        rfNodes.push({
-          id: n.id,
-          type: "group",
-          data: { id: n.id, title: n.title, status: n.status },
-          position: { x: 0, y: 0 },
-          style: {
-            width: groupWidth,
-            height: groupHeight,
-            backgroundColor: "transparent",
-          },
-        });
+  function processNode(
+    nodeId: string,
+    parentId?: string,
+    position = { x: 0, y: 0 },
+  ) {
+    const n = nodeMap.get(nodeId);
+    if (!n) return;
 
-        for (const [rank, rankChildren] of rankToChildren) {
-          const colContentHeight =
-            rankChildren.length * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
-          const colOffsetY = (contentHeight - colContentHeight) / 2;
-          for (let row = 0; row < rankChildren.length; row++) {
-            const childNode = nodeMap.get(rankChildren[row]);
-            if (!childNode) continue;
-            rfNodes.push({
-              id: childNode.id,
-              type: "task",
-              data: {
-                id: childNode.id,
-                title: childNode.title,
-                status: childNode.status,
-              },
-              parentId: n.id,
-              extent: "parent",
-              position: {
-                x: GROUP_PADDING + rank * (CHILD_WIDTH + CHILD_GAP_H),
-                y:
-                  GROUP_HEADER +
-                  GROUP_PADDING / 2 +
-                  colOffsetY +
-                  row * (CHILD_HEIGHT + CHILD_GAP_V),
-              },
-            });
-          }
-        }
-      } else {
-        // 縦並び（依存関係なし）
-        groupWidth = CHILD_WIDTH + GROUP_PADDING * 2;
-        groupHeight =
-          GROUP_HEADER +
-          children.length * (CHILD_HEIGHT + CHILD_GAP_V) -
-          CHILD_GAP_V +
-          GROUP_PADDING * 2;
+    const children = parentToChildren.get(nodeId) ?? [];
 
-        rfNodes.push({
-          id: n.id,
-          type: "group",
-          data: { id: n.id, title: n.title, status: n.status },
-          position: { x: 0, y: 0 },
-          style: {
-            width: groupWidth,
-            height: groupHeight,
-            backgroundColor: "transparent",
-          },
-        });
+    if (children.length === 0) {
+      rfNodes.push({
+        id: nodeId,
+        type: "task",
+        data: { id: nodeId, title: n.title, status: n.status },
+        position,
+        ...(parentId ? { parentId, extent: "parent" as const } : {}),
+      });
+      return;
+    }
 
-        for (let i = 0; i < children.length; i++) {
-          const childNode = nodeMap.get(children[i]);
-          if (!childNode) continue;
-          rfNodes.push({
-            id: childNode.id,
-            type: "task",
-            data: {
-              id: childNode.id,
-              title: childNode.title,
-              status: childNode.status,
-            },
-            parentId: n.id,
-            extent: "parent",
-            position: {
-              x: GROUP_PADDING,
-              y:
-                GROUP_HEADER +
-                GROUP_PADDING / 2 +
-                i * (CHILD_HEIGHT + CHILD_GAP_V),
-            },
+    const { width: groupWidth, height: groupHeight } = getNodeSize(nodeId);
+    rfNodes.push({
+      id: nodeId,
+      type: "group",
+      data: { id: nodeId, title: n.title, status: n.status },
+      position,
+      ...(parentId ? { parentId, extent: "parent" as const } : {}),
+      style: {
+        width: groupWidth,
+        height: groupHeight,
+        backgroundColor: "transparent",
+      },
+    });
+
+    const childIds = new Set(children);
+    const hasInternalDeps = data.edges.some(
+      (e) =>
+        e.type === "dependency" &&
+        childIds.has(e.source) &&
+        childIds.has(e.target),
+    );
+
+    if (hasInternalDeps) {
+      // カラムレイアウト（rank別に縦並び、rank間は横に並べる）
+      const ranks = assignRanks(children, data.edges);
+      const rankToChildren = new Map<number, string[]>();
+      for (const childId of children) {
+        const rank = ranks.get(childId) ?? 0;
+        if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
+        rankToChildren.get(rank)?.push(childId);
+      }
+      const maxRows = Math.max(
+        ...[...rankToChildren.values()].map((v) => v.length),
+      );
+      const contentHeight =
+        maxRows * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+      for (const [rank, rankChildren] of rankToChildren) {
+        const colContentHeight =
+          rankChildren.length * (CHILD_HEIGHT + CHILD_GAP_V) - CHILD_GAP_V;
+        const colOffsetY = (contentHeight - colContentHeight) / 2;
+        for (let row = 0; row < rankChildren.length; row++) {
+          processNode(rankChildren[row], nodeId, {
+            x: GROUP_PADDING + rank * (CHILD_WIDTH + CHILD_GAP_H),
+            y:
+              GROUP_HEADER +
+              GROUP_PADDING / 2 +
+              colOffsetY +
+              row * (CHILD_HEIGHT + CHILD_GAP_V),
           });
         }
       }
     } else {
-      rfNodes.push({
-        id: n.id,
-        type: "task",
-        data: { id: n.id, title: n.title, status: n.status },
-        position: { x: 0, y: 0 },
-      });
+      // 縦並び（依存関係なし）
+      let childY = GROUP_HEADER + GROUP_PADDING / 2;
+      for (const childId of children) {
+        processNode(childId, nodeId, { x: GROUP_PADDING, y: childY });
+        childY += getNodeSize(childId).height + CHILD_GAP_V;
+      }
+    }
+  }
+
+  for (const n of data.nodes) {
+    if (!childSet.has(n.id)) {
+      processNode(n.id);
     }
   }
 
