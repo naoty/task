@@ -23,15 +23,11 @@ brew install naoty/misc/task
 
 ```sh
 $ task add "Buy groceries"
-```
-```json
 {"ok": true, "result": {"id": 1}}
 ```
 
 ```sh
 $ task add "Make a shopping list" --parent 1
-```
-```json
 {"ok": true, "result": {"id": 2}}
 ```
 
@@ -39,8 +35,6 @@ $ task add "Make a shopping list" --parent 1
 
 ```sh
 $ task list
-```
-```json
 {
   "ok": true,
   "result": {
@@ -69,8 +63,6 @@ Returns the first unblocked `todo` task in depth-first order. Dependencies are r
 
 ```sh
 $ task next
-```
-```json
 {"ok": true, "result": {"task": {"id": 2, "title": "Make a shopping list", "status": "todo"}}}
 ```
 
@@ -78,15 +70,11 @@ $ task next
 
 ```sh
 $ task update 2 --status done
-```
-```json
 {"ok": true, "result": {"task": {"id": 2, "title": "Make a shopping list", "status": "done"}}}
 ```
 
 ```sh
 $ task update 1 --deadline 2026-04-01
-```
-```json
 {"ok": true, "result": {"task": {"id": 1, "title": "Buy groceries", "status": "doing", "deadline": "2026-04-01"}}}
 ```
 
