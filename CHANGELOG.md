@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-03-31
+
+### Features
+
+- `brew tap naoty/misc && brew install task` でインストールできるようになりました
+
 ## [0.1.1] - 2026-03-31
 
 ### Features
