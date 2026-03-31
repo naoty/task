@@ -29,7 +29,7 @@
 }
 
 .react-flow__node-group {
-  border: none !important;
+  border: none;
 }
 
 .react-flow .react-flow__handle {

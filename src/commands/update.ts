@@ -56,7 +56,7 @@ function cascadeDone(id: number, index: Index, taskDir: string): void {
       const fields = parseFrontmatter(content);
       const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
       const body = bodyMatch ? bodyMatch[1] : "";
-      fields["status"] = "done";
+      fields.status = "done";
       writeFileSync(childFile, serializeFrontmatter(fields, body));
     }
   }

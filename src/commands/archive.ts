@@ -48,7 +48,7 @@ export async function archive(taskDir: string): Promise<{ tasks: Task[] }> {
     newChildren[key] = ids.filter((id) => !archivedIds.has(id));
   }
 
-  newChildren["root"] = [...(newChildren["root"] ?? []), ...promotedToRoot];
+  newChildren.root = [...(newChildren.root ?? []), ...promotedToRoot];
 
   // 空になった非ルートエントリを削除
   for (const key of Object.keys(newChildren)) {

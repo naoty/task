@@ -14,8 +14,12 @@ export async function next(taskDir: string): Promise<{ task: Task | null }> {
   const taskCache = new Map<number, Task>();
 
   function getTask(id: number): Task {
-    if (!taskCache.has(id)) taskCache.set(id, readTask(id, taskDir));
-    return taskCache.get(id)!;
+    let task = taskCache.get(id);
+    if (!task) {
+      task = readTask(id, taskDir);
+      taskCache.set(id, task);
+    }
+    return task;
   }
 
   // 深さ優先: 子タスクを先に評価し、その後親タスクを評価する
