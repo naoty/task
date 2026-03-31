@@ -262,6 +262,39 @@ test("buildNodes: 列レイアウト - 同列の複数ノードは縦に並ぶ",
 // エッジ変換
 // -------------------------------------------------------------------
 
+test("buildNodes: 列レイアウト - 列幅はランクごとの最大幅を使う", () => {
+  // subtask_b (rank 0, 葉) → subtask_a (rank 1, サブサブタスクあり)
+  // subtask_a は内部deps でカラムレイアウト → 幅 420
+  // subtask_b の幅は 160 のまま
+  // 正しくは rank0幅=160, rank1幅=420 でカラム間隔を計算する
+  const data = makeGraph(
+    [
+      node("parent"),
+      node("subtask_a"),
+      node("subtask_b"),
+      node("sub1"),
+      node("sub2"),
+    ],
+    [
+      parentChildEdge("parent", "subtask_b"),
+      parentChildEdge("parent", "subtask_a"),
+      parentChildEdge("subtask_a", "sub1"),
+      parentChildEdge("subtask_a", "sub2"),
+      depEdge("sub1", "sub2"), // subtask_a 内部の依存
+      depEdge("subtask_b", "subtask_a"), // subtask_b が先
+    ],
+  );
+  const { nodes } = buildNodes(data);
+
+  const subtaskB = nodes.find((n) => n.id === "subtask_b");
+  const subtaskA = nodes.find((n) => n.id === "subtask_a");
+
+  // subtask_b の右端と subtask_a の左端の間隔が CHILD_GAP_H (60) であること
+  const subtaskBRight = (subtaskB?.position.x ?? 0) + CHILD_WIDTH;
+  const subtaskALeft = subtaskA?.position.x ?? 0;
+  expect(subtaskALeft - subtaskBRight).toBe(60); // CHILD_GAP_H
+});
+
 test("buildNodes: dependency エッジのみ出力に含まれる", () => {
   const data = makeGraph(
     [node("1"), node("2"), node("3")],

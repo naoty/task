@@ -157,9 +157,18 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         rankToChildren.get(rank)?.push(childId);
       }
       const numCols = Math.max(...ranks.values()) + 1;
-      const maxChildWidth = Math.max(
-        ...children.map((id) => getNodeSize(id).width),
-      );
+      const rankWidths = new Map<number, number>();
+      for (const [rank, rankChildren] of rankToChildren) {
+        rankWidths.set(
+          rank,
+          Math.max(...rankChildren.map((id) => getNodeSize(id).width)),
+        );
+      }
+      let totalContentWidth = 0;
+      for (let r = 0; r < numCols; r++) {
+        totalContentWidth += rankWidths.get(r) ?? 0;
+      }
+      totalContentWidth += (numCols - 1) * CHILD_GAP_H;
       const contentHeight = Math.max(
         ...[...rankToChildren.values()].map((rankChildren) => {
           const heights = rankChildren.map((id) => getNodeSize(id).height);
@@ -170,10 +179,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         }),
       );
       return {
-        width:
-          numCols * (maxChildWidth + CHILD_GAP_H) -
-          CHILD_GAP_H +
-          GROUP_PADDING * 2,
+        width: totalContentWidth + GROUP_PADDING * 2,
         height: GROUP_HEADER + contentHeight + GROUP_PADDING * 2,
       };
     } else {
@@ -242,9 +248,20 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         if (!rankToChildren.has(rank)) rankToChildren.set(rank, []);
         rankToChildren.get(rank)?.push(childId);
       }
-      const maxChildWidth = Math.max(
-        ...children.map((id) => getNodeSize(id).width),
-      );
+      const numCols = Math.max(...ranks.values()) + 1;
+      const rankWidths = new Map<number, number>();
+      for (const [rank, rankChildren] of rankToChildren) {
+        rankWidths.set(
+          rank,
+          Math.max(...rankChildren.map((id) => getNodeSize(id).width)),
+        );
+      }
+      const rankXOffsets = new Map<number, number>();
+      let cumulativeX = 0;
+      for (let r = 0; r < numCols; r++) {
+        rankXOffsets.set(r, cumulativeX);
+        cumulativeX += (rankWidths.get(r) ?? 0) + CHILD_GAP_H;
+      }
       const contentHeight = Math.max(
         ...[...rankToChildren.values()].map((rankChildren) => {
           const heights = rankChildren.map((id) => getNodeSize(id).height);
@@ -263,7 +280,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         let itemY = GROUP_HEADER + GROUP_PADDING / 2 + colOffsetY;
         for (let row = 0; row < rankChildren.length; row++) {
           processNode(rankChildren[row], nodeId, {
-            x: GROUP_PADDING + rank * (maxChildWidth + CHILD_GAP_H),
+            x: GROUP_PADDING + (rankXOffsets.get(rank) ?? 0),
             y: itemY,
           });
           itemY += colSizes[row].height + CHILD_GAP_V;
