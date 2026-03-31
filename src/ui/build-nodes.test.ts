@@ -321,3 +321,25 @@ test("buildNodes: 依存エッジにスタイルが設定される", () => {
   expect(edges[0].style?.strokeDasharray).toBe("5 4");
   expect(edges[0].markerEnd).toBeDefined();
 });
+
+// -------------------------------------------------------------------
+// トップレベルレイアウト（子ノード依存の反映）
+// -------------------------------------------------------------------
+
+test("buildNodes: グループ間の子ノード依存がトップレベルレイアウトに反映される", () => {
+  // G1の子C1がG2の子C2に依存 → G1はG2より左に配置される
+  const data = makeGraph(
+    [node("G1"), node("C1"), node("G2"), node("C2")],
+    [
+      parentChildEdge("G1", "C1"),
+      parentChildEdge("G2", "C2"),
+      depEdge("C1", "C2"),
+    ],
+    ["G1", "G2"],
+  );
+  const { nodes } = buildNodes(data);
+
+  const g1 = nodes.find((n) => n.id === "G1");
+  const g2 = nodes.find((n) => n.id === "G2");
+  expect(g1?.position.x).toBeLessThan(g2?.position.x);
+});
