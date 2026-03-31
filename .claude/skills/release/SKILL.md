@@ -68,7 +68,7 @@ CHANGELOG.md の形式：
 1. `CHANGELOG.md` を作成/更新（新バージョンを先頭に追記）
 2. `package.json` の `version` フィールドを更新
 
-### 5. コミット・タグ・リリース
+### 5. コミット・タグ・push
 
 ```bash
 # 変更をコミット
@@ -78,12 +78,8 @@ git commit -m "chore: release v<version>"
 # タグを作成
 git tag v<version>
 
-# pushとGitHub Release作成
+# push（GitHub Actions がタグをトリガーにリリースを作成する）
 git push origin main --tags
-
-# CHANGELOG.md から該当バージョンのセクションを抜き出してリリースノートに使う
-awk '/^## \[<version>\]/{found=1; next} found && /^## \[/{exit} found{print}' CHANGELOG.md | \
-  gh release create v<version> --title "v<version>" --notes-file -
 ```
 
 ## 注意事項
@@ -91,3 +87,4 @@ awk '/^## \[<version>\]/{found=1; next} found && /^## \[/{exit} found{print}' CH
 - CHANGELOGはユーザーが読むドキュメント。実装都合のコミットをそのまま転記しない
 - バージョンはリリース前に必ずユーザーに確認する
 - `main` ブランチで直接リリースコミットを行う（リリース専用ブランチは不要）
+- GitHub Release の作成は GitHub Actions ワークフローが行う。`gh release create` は実行しない（タグ push でワークフローが自動トリガーされる）
