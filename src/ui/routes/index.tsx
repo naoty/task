@@ -5,7 +5,7 @@ import {
   Position,
   ReactFlow,
 } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { buildNodes, type GraphData } from "../build-nodes";
 
 type TaskNodeData = {
@@ -85,7 +85,7 @@ export function IndexRoute() {
     [] as ReturnType<typeof buildNodes>["edges"],
   );
 
-  useEffect(() => {
+  const fetchGraph = useCallback(() => {
     fetch("/api/graph")
       .then((r) => r.json())
       .then((data: GraphData) => {
@@ -94,6 +94,16 @@ export function IndexRoute() {
         setEdges(e);
       });
   }, []);
+
+  useEffect(() => {
+    fetchGraph();
+  }, [fetchGraph]);
+
+  useEffect(() => {
+    const es = new EventSource("/api/events");
+    es.onmessage = () => fetchGraph();
+    return () => es.close();
+  }, [fetchGraph]);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
