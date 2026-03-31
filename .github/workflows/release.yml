@@ -143,3 +143,63 @@ jobs:
             build/task-darwin-arm64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-homebrew:
+    needs: [release]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Darwin artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: darwin-bins
+          path: build
+
+      - name: Calculate checksums
+        run: |
+          SHA256_ARM64=$(sha256sum build/task-darwin-arm64 | awk '{print $1}')
+          SHA256_X64=$(sha256sum build/task-darwin-x64 | awk '{print $1}')
+          echo "SHA256_ARM64=$SHA256_ARM64" >> $GITHUB_ENV
+          echo "SHA256_X64=$SHA256_X64" >> $GITHUB_ENV
+
+      - name: Update Homebrew formula
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          git clone https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/naoty/homebrew-misc.git
+          cat > homebrew-misc/Formula/task.rb << EOF
+          class Task < Formula
+            desc "Task management CLI"
+            homepage "https://github.com/naoty/task"
+            version "$VERSION"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/naoty/task/releases/download/${GITHUB_REF_NAME}/task-darwin-arm64"
+                sha256 "$SHA256_ARM64"
+
+                def install
+                  bin.install "task-darwin-arm64" => "task"
+                end
+              end
+
+              on_intel do
+                url "https://github.com/naoty/task/releases/download/${GITHUB_REF_NAME}/task-darwin-x64"
+                sha256 "$SHA256_X64"
+
+                def install
+                  bin.install "task-darwin-x64" => "task"
+                end
+              end
+            end
+
+            test do
+              system "#{bin}/task", "--help"
+            end
+          end
+          EOF
+          cd homebrew-misc
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Formula/task.rb
+          git commit -m "Update task to ${GITHUB_REF_NAME}"
+          git push
