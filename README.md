@@ -93,15 +93,15 @@ $ task update 1 --deadline 2026-04-01
 ### Manage dependencies
 
 ```sh
-$ task dep add 3 --on 2   # task 3 depends on task 2
-$ task dep delete 3 --on 2
+$ task dep add 3 2   # task 3 depends on task 2
+$ task dep delete 3 2
 ```
 
 ### Move a task
 
 ```sh
 $ task move 2 --parent 1   # change parent
-$ task move 2 --before 3   # reorder
+$ task move 2 1             # move to position 1 within siblings
 ```
 
 ### Archive completed tasks
