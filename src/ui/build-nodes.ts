@@ -32,7 +32,7 @@ export function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
     const w =
       typeof node.style?.width === "number" ? node.style.width : NODE_WIDTH;
     const h =
-      typeof node.style?.height === "number" ? node.style.height : NODE_HEIGHT;
+      typeof node.style?.height === "number" ? node.style.height : CHILD_HEIGHT;
     g.setNode(node.id, { width: w, height: h });
   }
   for (const edge of edges) {
@@ -48,7 +48,7 @@ export function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
     const w =
       typeof node.style?.width === "number" ? node.style.width : NODE_WIDTH;
     const h =
-      typeof node.style?.height === "number" ? node.style.height : NODE_HEIGHT;
+      typeof node.style?.height === "number" ? node.style.height : CHILD_HEIGHT;
     return { ...node, position: { x: x - w / 2, y: y - h / 2 } };
   });
 }
@@ -128,6 +128,21 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       parentToChildren.get(edge.source)?.push(edge.target);
       childSet.add(edge.target);
     }
+  }
+
+  const nodeToParent = new Map<string, string>();
+  for (const [parentId, children] of parentToChildren) {
+    for (const childId of children) {
+      nodeToParent.set(childId, parentId);
+    }
+  }
+
+  function getTopLevelAncestor(nodeId: string): string {
+    let current = nodeId;
+    while (childSet.has(current)) {
+      current = nodeToParent.get(current) ?? current;
+    }
+    return current;
   }
 
   const nodeMap = new Map(data.nodes.map((n) => [n.id, n]));
@@ -320,7 +335,14 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
     }));
 
   const topLevelNodes = rfNodes.filter((n) => !n.parentId);
-  const layouted = applyDagreLayout(topLevelNodes, rfEdges);
+  const dagreEdges = rfEdges
+    .map((e) => ({
+      ...e,
+      source: getTopLevelAncestor(e.source),
+      target: getTopLevelAncestor(e.target),
+    }))
+    .filter((e) => e.source !== e.target);
+  const layouted = applyDagreLayout(topLevelNodes, dagreEdges);
 
   // rootOrderに従って同じx座標グループ内のノードをy座標で並び替える
   const rootOrderMap = new Map(data.rootOrder.map((id, i) => [id, i]));
@@ -347,7 +369,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       const h =
         typeof node.style?.height === "number"
           ? node.style.height
-          : NODE_HEIGHT;
+          : CHILD_HEIGHT;
       adjustedPositions.set(node.id, { x: node.position.x, y: currentY });
       currentY += h + 40;
     }
