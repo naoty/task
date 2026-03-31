@@ -93,3 +93,31 @@ test("10ポート試行してもすべて使用中の場合、エラーをスロ
   expect(() => createServer(19980, taskDir())).toThrow();
   for (const s of servers) s.stop();
 });
+
+test("/api/events へのリクエストはSSEストリームを返す", async () => {
+  server = createServer(19979, taskDir());
+  const res = await fetch("http://localhost:19979/api/events");
+  expect(res.status).toBe(200);
+  expect(res.headers.get("Content-Type")).toContain("text/event-stream");
+  await res.body?.cancel();
+});
+
+test("ファイル変更後にSSEイベントが届く", async () => {
+  server = createServer(19978, taskDir());
+  const res = await fetch("http://localhost:19978/api/events");
+  if (!res.body) throw new Error("No response body");
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+
+  // 接続確認のコメントを読み捨てる
+  await reader.read();
+
+  // ファイルを変更してイベントをトリガー
+  await runCli(["add", "テストタスク"], taskDir());
+
+  const { value } = await reader.read();
+  const text = decoder.decode(value);
+  expect(text).toContain("data: change");
+
+  await reader.cancel();
+});
