@@ -113,17 +113,29 @@ export function IndexRoute() {
     fetchGraph();
   }, [fetchGraph]);
 
-  useEffect(() => {
-    const es = new EventSource("/api/events");
-    es.onmessage = () => fetchGraph();
-    return () => es.close();
-  }, [fetchGraph]);
-
-  const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
-    fetch(`/api/tasks/${node.id}`)
+  const fetchTask = useCallback((id: number) => {
+    fetch(`/api/tasks/${id}`)
       .then((r) => r.json())
       .then((data: TaskDetail) => setSelectedTask(data));
   }, []);
+
+  useEffect(() => {
+    const es = new EventSource("/api/events");
+    es.onmessage = () => {
+      fetchGraph();
+      if (selectedTask) {
+        fetchTask(selectedTask.id);
+      }
+    };
+    return () => es.close();
+  }, [fetchGraph, fetchTask, selectedTask]);
+
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_, node) => {
+      fetchTask(Number(node.id));
+    },
+    [fetchTask],
+  );
 
   const closeModal = useCallback(() => setSelectedTask(null), []);
 
