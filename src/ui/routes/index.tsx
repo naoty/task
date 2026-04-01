@@ -161,19 +161,13 @@ export function IndexRoute() {
         nodesConnectable={false}
         elementsSelectable={false}
         onNodeClick={onNodeClick}
+        onPaneClick={closeModal}
       >
         <Background
           variant={BackgroundVariant.Lines}
           color="rgba(255,255,255,0.08)"
         />
       </ReactFlow>
-
-      {/* backdrop */}
-      <div
-        aria-hidden="true"
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${selectedTask ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        onClick={closeModal}
-      />
 
       {/* half modal */}
       <div
