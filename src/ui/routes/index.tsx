@@ -1,4 +1,6 @@
 import {
+  Background,
+  BackgroundVariant,
   Handle,
   type Node,
   type NodeProps,
@@ -115,7 +117,12 @@ export function IndexRoute() {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-      ></ReactFlow>
+      >
+        <Background
+          variant={BackgroundVariant.Lines}
+          color="rgba(255,255,255,0.08)"
+        />
+      </ReactFlow>
     </div>
   );
 }
