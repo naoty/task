@@ -21,11 +21,11 @@ export const CHILD_HEIGHT = 64;
 export const GROUP_PADDING = 20;
 export const GROUP_HEADER = 56;
 export const CHILD_GAP_H = 60;
-export const CHILD_GAP_V = 12;
+export const GAP_V = 12;
 
 export function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: "LR", ranksep: 80, nodesep: 40 });
+  g.setGraph({ rankdir: "LR", ranksep: 80, nodesep: GAP_V });
   g.setDefaultEdgeLabel(() => ({}));
 
   for (const node of nodes) {
@@ -189,7 +189,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           const heights = rankChildren.map((id) => getNodeSize(id).height);
           return (
             heights.reduce((sum, h) => sum + h, 0) +
-            (rankChildren.length - 1) * CHILD_GAP_V
+            (rankChildren.length - 1) * GAP_V
           );
         }),
       );
@@ -203,7 +203,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       const maxChildWidth = Math.max(...childSizes.map((s) => s.width));
       const totalChildHeight =
         childSizes.reduce((sum, s) => sum + s.height, 0) +
-        (children.length - 1) * CHILD_GAP_V;
+        (children.length - 1) * GAP_V;
       return {
         width: maxChildWidth + GROUP_PADDING * 2,
         height: GROUP_HEADER + totalChildHeight + GROUP_PADDING * 2,
@@ -282,7 +282,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           const heights = rankChildren.map((id) => getNodeSize(id).height);
           return (
             heights.reduce((sum, h) => sum + h, 0) +
-            (rankChildren.length - 1) * CHILD_GAP_V
+            (rankChildren.length - 1) * GAP_V
           );
         }),
       );
@@ -290,7 +290,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
         const colSizes = rankChildren.map((id) => getNodeSize(id));
         const colContentHeight =
           colSizes.reduce((sum, s) => sum + s.height, 0) +
-          (rankChildren.length - 1) * CHILD_GAP_V;
+          (rankChildren.length - 1) * GAP_V;
         const colOffsetY = (contentHeight - colContentHeight) / 2;
         let itemY = GROUP_HEADER + GROUP_PADDING / 2 + colOffsetY;
         for (let row = 0; row < rankChildren.length; row++) {
@@ -298,7 +298,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
             x: GROUP_PADDING + (rankXOffsets.get(rank) ?? 0),
             y: itemY,
           });
-          itemY += colSizes[row].height + CHILD_GAP_V;
+          itemY += colSizes[row].height + GAP_V;
         }
       }
     } else {
@@ -306,7 +306,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
       let childY = GROUP_HEADER + GROUP_PADDING / 2;
       for (const childId of children) {
         processNode(childId, nodeId, { x: GROUP_PADDING, y: childY });
-        childY += getNodeSize(childId).height + CHILD_GAP_V;
+        childY += getNodeSize(childId).height + GAP_V;
       }
     }
   }
@@ -371,7 +371,7 @@ export function buildNodes(data: GraphData): { nodes: Node[]; edges: Edge[] } {
           ? node.style.height
           : CHILD_HEIGHT;
       adjustedPositions.set(node.id, { x: node.position.x, y: currentY });
-      currentY += h + 40;
+      currentY += h + GAP_V;
     }
   }
   const positionMap = new Map(
