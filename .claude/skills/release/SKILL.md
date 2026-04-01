@@ -68,7 +68,22 @@ CHANGELOG.md の形式：
 1. `CHANGELOG.md` を作成/更新（新バージョンを先頭に追記）
 2. `package.json` の `version` フィールドを更新
 
-### 5. コミット・タグ・push
+### 5. mainブランチの状態を確認する
+
+リリースコミットを作る前に、すべての変更が `main` にマージ済みであることを確認する。
+
+```bash
+# オープン中のPRがないか確認
+gh pr list
+
+# ローカルの main が origin/main と一致しているか確認
+git fetch origin
+git log origin/main..HEAD --oneline  # 出力がなければOK
+```
+
+未マージのPRや、originと乖離がある場合はリリースを中断してユーザーに確認する。
+
+### 6. コミット・タグ・push
 
 ```bash
 # 変更をコミット
