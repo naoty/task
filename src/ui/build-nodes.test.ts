@@ -2,9 +2,9 @@ import { expect, test } from "bun:test";
 import {
   assignRanks,
   buildNodes,
-  CHILD_GAP_V,
   CHILD_HEIGHT,
   CHILD_WIDTH,
+  GAP_V,
   GROUP_HEADER,
   GROUP_PADDING,
   type GraphData,
@@ -144,7 +144,7 @@ test("buildNodes: 縦並び - 2子のグループサイズ", () => {
 
   const parent = nodes.find((n) => n.id === "1");
   expect(parent?.style?.height).toBe(
-    GROUP_HEADER + CHILD_HEIGHT * 2 + CHILD_GAP_V + GROUP_PADDING * 2,
+    GROUP_HEADER + CHILD_HEIGHT * 2 + GAP_V + GROUP_PADDING * 2,
   );
 });
 
@@ -160,7 +160,7 @@ test("buildNodes: 縦並び - 1子目のy座標", () => {
   expect(child1?.position.y).toBe(GROUP_HEADER + GROUP_PADDING / 2);
 });
 
-test("buildNodes: 縦並び - 2子目はCHILD_HEIGHT+CHILD_GAP_V分下", () => {
+test("buildNodes: 縦並び - 2子目はCHILD_HEIGHT+GAP_V分下", () => {
   const data = makeGraph(
     [node("1"), node("2"), node("3")],
     [parentChildEdge("1", "2"), parentChildEdge("1", "3")],
@@ -169,7 +169,7 @@ test("buildNodes: 縦並び - 2子目はCHILD_HEIGHT+CHILD_GAP_V分下", () => {
 
   const child2 = nodes.find((n) => n.id === "3");
   expect(child2?.position.y).toBe(
-    GROUP_HEADER + GROUP_PADDING / 2 + CHILD_HEIGHT + CHILD_GAP_V,
+    GROUP_HEADER + GROUP_PADDING / 2 + CHILD_HEIGHT + GAP_V,
   );
 });
 
