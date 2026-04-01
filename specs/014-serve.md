@@ -26,6 +26,27 @@ task serve [--port <number>]
 
 ## APIエンドポイント
 
+### GET /api/tasks/:id
+
+指定したIDのタスク詳細をJSON形式で返す。
+
+#### レスポンス（成功時）
+
+```json
+{
+  "id": 1,
+  "title": "タスク",
+  "status": "todo",
+  "body": "タスクの本文\n"
+}
+```
+
+HTTP 200 を返す。
+
+#### レスポンス（タスクが存在しない場合）
+
+HTTP 404 を返す。
+
 ### GET /api/tasks
 
 タスクの一覧をJSON形式で返す。

@@ -1,9 +1,12 @@
-import { watch } from "node:fs";
+import { existsSync, readFileSync, watch } from "node:fs";
+import { resolve } from "node:path";
 import indexCss from "../../dist/ui/index.css" with { type: "text" };
 import indexHtml from "../../dist/ui/index.html" with { type: "text" };
 import indexJs from "../../dist/ui/index.js" with { type: "text" };
 import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
+import { extractBody } from "../frontmatter";
+import { readTask } from "../task";
 
 export function createServer(
   port: number,
@@ -57,6 +60,21 @@ function createFetch(
 ) {
   return async function fetch(req: Request): Promise<Response> {
     const url = new URL(req.url);
+
+    const taskMatch = url.pathname.match(/^\/api\/tasks\/(\d+)$/);
+    if (taskMatch && req.method === "GET") {
+      const id = Number(taskMatch[1]);
+      const filePath = resolve(taskDir, `${id}.md`);
+      if (!existsSync(filePath)) {
+        return new Response("Not Found", { status: 404 });
+      }
+      const task = readTask(id, taskDir);
+      const content = readFileSync(filePath, "utf-8");
+      const body = extractBody(content);
+      return new Response(JSON.stringify({ ...task, body }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (url.pathname === "/api/tasks" && req.method === "GET") {
       const result = await list(taskDir);
