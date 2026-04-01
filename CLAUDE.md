@@ -1,18 +1,3 @@
-# ワークフロー
-
-1. `task next` で次のタスクを確認する。
-2. `task update <id> --status doing` でタスクを進行中に更新する。
-3. 最新の `main` ブランチからworktreeを `.claude/worktrees/` 以下に作成して、以下はworktreeで作業する。
-4. plan modeで変更の計画をコミット単位で立て、ユーザーから承認を得る。
-5. 計画したコミット単位で以下のように進める。
-   a. 仕様駆動開発に沿って、まずは仕様書を作成/更新し、受け入れテストを書いて、それを満たすように実装する。
-   b. `bun run test` と `bun run check` がすべてパスすることを確認する。
-   c. 作業ログをタスクファイルに記入する。
-   d. コミットする。
-6. すべてのコミットが完了したらPull Requestを作成する。
-7. ユーザーからPull Requestをmergeした連絡を受けたらworktreeを削除する。
-8. `task update <id> --status done` でタスクを完了に更新する。
-
 # ディレクトリ構成
 
 - `specs/`: 仕様書
