@@ -180,11 +180,11 @@ export function IndexRoute() {
       >
         <div className="flex items-start justify-between p-4 border-b border-border gap-3">
           <div className="flex flex-col gap-1.5 min-w-0">
-            <span className="text-sm font-medium text-text break-words">
+            <span className="text-base font-medium text-text break-words">
               {selectedTask?.title}
             </span>
             <span
-              className="text-[10px] font-semibold uppercase"
+              className="text-xs font-semibold uppercase"
               style={{ color: borderColor }}
             >
               {selectedTask?.status}
@@ -222,11 +222,11 @@ export function IndexRoute() {
 
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
           {selectedTask?.body?.trim() ? (
-            <pre className="text-xs text-text/80 whitespace-pre-wrap font-mono">
+            <pre className="text-sm text-text/80 whitespace-pre-wrap font-mono">
               {selectedTask.body}
             </pre>
           ) : (
-            <span className="text-xs text-muted italic">本文なし</span>
+            <span className="text-sm text-muted italic">本文なし</span>
           )}
         </div>
 
