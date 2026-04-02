@@ -10,6 +10,7 @@ import {
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { buildNodes, type GraphData } from "../build-nodes";
+import { RichEditor } from "../components/RichEditor";
 
 type TaskNodeData = {
   id: string;
@@ -157,6 +158,18 @@ export function IndexRoute() {
   const borderColor =
     statusBorderColor[selectedTask?.status ?? ""] ?? statusBorderColor.todo;
 
+  const saveBody = useCallback(
+    (body: string) => {
+      if (!selectedTask) return;
+      fetch(`/api/tasks/${selectedTask.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+    },
+    [selectedTask],
+  );
+
   const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
@@ -251,12 +264,12 @@ export function IndexRoute() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-          {selectedTask?.body?.trim() ? (
-            <pre className="text-sm text-text/80 whitespace-pre-wrap font-mono">
-              {selectedTask.body}
-            </pre>
-          ) : (
-            <span className="text-sm text-muted italic">本文なし</span>
+          {selectedTask && (
+            <RichEditor
+              key={selectedTask.id}
+              content={selectedTask.body ?? ""}
+              onSave={saveBody}
+            />
           )}
         </div>
 
