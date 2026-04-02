@@ -8,7 +8,7 @@ import {
   Position,
   ReactFlow,
 } from "@xyflow/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildNodes, type GraphData } from "../build-nodes";
 
 type TaskNodeData = {
@@ -103,6 +103,8 @@ export function IndexRoute() {
     [] as ReturnType<typeof buildNodes>["edges"],
   );
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
+  const [panelWidth, setPanelWidth] = useState(480);
+  const isResizing = useRef(false);
 
   const fetchGraph = useCallback(() => {
     fetch("/api/graph")
@@ -155,6 +157,26 @@ export function IndexRoute() {
   const borderColor =
     statusBorderColor[selectedTask?.status ?? ""] ?? statusBorderColor.todo;
 
+  const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      const newWidth = Math.min(
+        Math.max(window.innerWidth - ev.clientX, 280),
+        window.innerWidth * 0.8,
+      );
+      setPanelWidth(newWidth);
+    };
+    const onMouseUp = () => {
+      isResizing.current = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, []);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -176,15 +198,23 @@ export function IndexRoute() {
 
       {/* half modal */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-1/2 max-w-[480px] bg-surface/90 backdrop-blur-sm border-l border-border flex flex-col overflow-hidden transition-transform duration-300 ${selectedTask ? "translate-x-0" : "translate-x-full"}`}
+        style={{ width: panelWidth }}
+        className={`fixed top-0 right-0 z-50 h-full bg-surface-elevated border-l border-border flex flex-col overflow-hidden transition-transform duration-300 ${selectedTask ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="flex items-start justify-between p-4 border-b border-border gap-3">
+        {/* resize handle */}
+        <button
+          type="button"
+          aria-label="パネル幅を変更"
+          onMouseDown={onResizeMouseDown}
+          className="absolute top-0 left-0 h-full w-1 cursor-col-resize hover:bg-border bg-transparent border-none p-0"
+        />
+        <div className="flex items-start justify-between p-4 border-b border-border-elevated gap-3">
           <div className="flex flex-col gap-1.5 min-w-0">
-            <span className="text-sm font-medium text-text break-words">
+            <span className="text-base font-medium text-text break-words">
               {selectedTask?.title}
             </span>
             <span
-              className="text-[10px] font-semibold uppercase"
+              className="text-xs font-semibold uppercase"
               style={{ color: borderColor }}
             >
               {selectedTask?.status}
@@ -222,16 +252,16 @@ export function IndexRoute() {
 
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
           {selectedTask?.body?.trim() ? (
-            <pre className="text-xs text-text/80 whitespace-pre-wrap font-mono">
+            <pre className="text-sm text-text/80 whitespace-pre-wrap font-mono">
               {selectedTask.body}
             </pre>
           ) : (
-            <span className="text-xs text-muted italic">本文なし</span>
+            <span className="text-sm text-muted italic">本文なし</span>
           )}
         </div>
 
-        <div className="px-4 pb-3 border-t border-border pt-2">
-          <span className="text-[9px] text-muted">#{selectedTask?.id}</span>
+        <div className="px-4 pb-3 border-t border-border-elevated pt-2">
+          <span className="text-xs text-muted">#{selectedTask?.id}</span>
         </div>
       </div>
     </div>
