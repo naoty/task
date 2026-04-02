@@ -87,6 +87,7 @@ export function RichEditor({ content, onSave }: Props) {
   const editor = useEditor({
     extensions: [StarterKit, Markdown],
     content,
+    contentType: "markdown",
     editorProps: {
       attributes: {
         class: "outline-none",
@@ -95,8 +96,7 @@ export function RichEditor({ content, onSave }: Props) {
     onUpdate: ({ editor: e }) => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
-        const md = e.storage.markdown.getMarkdown();
-        onSave(md);
+        onSave(e.getMarkdown());
       }, 800);
     },
   });
@@ -104,8 +104,7 @@ export function RichEditor({ content, onSave }: Props) {
   // contentが外部から変わったとき（別タスクを選択したとき）に更新する
   useEffect(() => {
     if (!editor) return;
-    const currentMd = editor.storage.markdown.getMarkdown();
-    if (currentMd !== content) {
+    if (editor.getMarkdown() !== content) {
       editor.commands.setContent(content, false, {
         preserveWhitespace: "full",
       });
