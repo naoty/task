@@ -176,7 +176,7 @@ export function IndexRoute() {
 
       {/* half modal */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-1/2 max-w-[480px] bg-surface/90 backdrop-blur-sm border-l border-border flex flex-col overflow-hidden transition-transform duration-300 ${selectedTask ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 z-50 h-full w-1/2 max-w-[480px] bg-surface-elevated border-l border-border flex flex-col overflow-hidden transition-transform duration-300 ${selectedTask ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex items-start justify-between p-4 border-b border-border gap-3">
           <div className="flex flex-col gap-1.5 min-w-0">
