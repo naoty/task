@@ -208,7 +208,7 @@ export function IndexRoute() {
           onMouseDown={onResizeMouseDown}
           className="absolute top-0 left-0 h-full w-1 cursor-col-resize hover:bg-border bg-transparent border-none p-0"
         />
-        <div className="flex items-start justify-between p-4 border-b border-border gap-3">
+        <div className="flex items-start justify-between p-4 border-b border-border-elevated gap-3">
           <div className="flex flex-col gap-1.5 min-w-0">
             <span className="text-base font-medium text-text break-words">
               {selectedTask?.title}
@@ -260,8 +260,8 @@ export function IndexRoute() {
           )}
         </div>
 
-        <div className="px-4 pb-3 border-t border-border pt-2">
-          <span className="text-[9px] text-muted">#{selectedTask?.id}</span>
+        <div className="px-4 pb-3 border-t border-border-elevated pt-2">
+          <span className="text-xs text-muted">#{selectedTask?.id}</span>
         </div>
       </div>
     </div>
