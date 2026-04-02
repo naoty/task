@@ -67,7 +67,12 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
     <>
       <Handle type="target" position={Position.Left} />
       <div
-        style={{ borderColor, width: "100%", height: "100%" }}
+        style={{
+          borderColor,
+          width: "100%",
+          height: "100%",
+          textAlign: "left",
+        }}
         className="rounded-[0.5rem] border-2 bg-surface flex flex-col relative cursor-pointer"
       >
         <div className="w-full p-3 flex flex-col gap-1">
