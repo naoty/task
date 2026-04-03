@@ -41,6 +41,141 @@
   border: none;
 }
 
+/* TipTap editor content styles */
+.ProseMirror {
+  outline: none;
+  min-height: 120px;
+  font-size: 0.875rem;
+  color: rgba(226, 228, 237, 0.8);
+}
+
+.ProseMirror p {
+  margin: 0 0 0.75rem;
+}
+
+.ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.ProseMirror h1 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 1.25rem 0 0.375rem;
+  color: var(--color-text);
+}
+
+.ProseMirror h1:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror h2 {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin: 1rem 0 0.375rem;
+  color: var(--color-text);
+}
+
+.ProseMirror h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0.75rem 0 0.25rem;
+  color: var(--color-text);
+}
+
+.ProseMirror strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror s {
+  text-decoration: line-through;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+
+.ProseMirror li {
+  margin: 0.2rem 0;
+}
+
+.ProseMirror code {
+  font-family: "SF Mono", Consolas, ui-monospace, monospace;
+  font-size: 1em;
+  background-color: var(--color-surface);
+  padding: 0.1em 0.3em;
+  border-radius: 0.2rem;
+  color: var(--color-text);
+}
+
+.ProseMirror pre {
+  font-family: "SF Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.8em;
+  background-color: var(--color-surface);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin: 0 0 0.75rem;
+  overflow-x: auto;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid var(--color-border-elevated);
+  padding-left: 1rem;
+  margin: 0 0 0.75rem;
+  color: var(--color-muted);
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-muted);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Auto-hide scrollbar */
+.scroll-hide {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.scroll-hide.scrollbar-visible {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  transition: scrollbar-color 0s;
+}
+
+.scroll-hide::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.scroll-hide.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0s;
+}
+
 @layer base {
   *,
   *::before,
