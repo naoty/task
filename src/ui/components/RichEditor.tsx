@@ -10,16 +10,11 @@ type Props = {
 
 export function RichEditor({ content, onSave }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const contentRef = useRef(content);
-  contentRef.current = content;
 
   const editor = useEditor({
     extensions: [StarterKit, Markdown],
-    onCreate: ({ editor: e }) => {
-      e.commands.setContent(contentRef.current, false, {
-        contentType: "markdown",
-      });
-    },
+    content,
+    contentType: "markdown",
     editorProps: {
       attributes: {
         class: "outline-none",
@@ -36,7 +31,10 @@ export function RichEditor({ content, onSave }: Props) {
   // 別タスクを選択したとき（contentが外部から変わったとき）に更新する
   useEffect(() => {
     if (!editor) return;
-    editor.commands.setContent(content, false, { contentType: "markdown" });
+    editor.commands.setContent(content, {
+      contentType: "markdown",
+      emitUpdate: false,
+    });
   }, [editor, content]);
 
   if (!editor) return null;
