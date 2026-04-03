@@ -47,7 +47,6 @@
   min-height: 120px;
   font-size: 0.875rem;
   color: rgba(226, 228, 237, 0.8);
-  padding: 1rem;
 }
 
 .ProseMirror p {
@@ -56,6 +55,17 @@
 
 .ProseMirror p:last-child {
   margin-bottom: 0;
+}
+
+.ProseMirror h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--color-text);
+}
+
+.ProseMirror h1:first-child {
+  margin-top: 0;
 }
 
 .ProseMirror h2 {
