@@ -18,6 +18,7 @@ export function RichEditor({ content, onSave }: Props) {
     editorProps: {
       attributes: {
         class: "outline-none",
+        spellcheck: "false",
       },
     },
     onUpdate: ({ editor: e }) => {
