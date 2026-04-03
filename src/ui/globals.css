@@ -149,7 +149,7 @@
 .scroll-hide {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.6s ease;
+  transition: scrollbar-color 0.3s ease;
 }
 
 .scroll-hide.scrollbar-visible {
@@ -168,7 +168,7 @@
 .scroll-hide::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 3px;
-  transition: background 0.6s ease;
+  transition: background 0.3s ease;
 }
 
 .scroll-hide.scrollbar-visible::-webkit-scrollbar-thumb {
