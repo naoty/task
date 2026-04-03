@@ -145,6 +145,33 @@
   height: 0;
 }
 
+/* Auto-hide scrollbar */
+.scroll-hide {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.scroll-hide.scrollbar-visible {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.scroll-hide::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.scroll-hide.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 @layer base {
   *,
   *::before,

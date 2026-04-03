@@ -106,6 +106,18 @@ export function IndexRoute() {
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
   const [panelWidth, setPanelWidth] = useState(480);
   const isResizing = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.classList.add("scrollbar-visible");
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => {
+      el.classList.remove("scrollbar-visible");
+    }, 1000);
+  }, []);
 
   const fetchGraph = useCallback(() => {
     fetch("/api/graph")
@@ -263,7 +275,11 @@ export function IndexRoute() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scroll-hide"
+        >
           {selectedTask && (
             <RichEditor
               key={selectedTask.id}
