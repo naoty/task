@@ -113,7 +113,7 @@
 
 .ProseMirror code {
   font-family: "SF Mono", Consolas, ui-monospace, monospace;
-  font-size: 0.8em;
+  font-size: 1em;
   background-color: var(--color-surface);
   padding: 0.1em 0.3em;
   border-radius: 0.2rem;
