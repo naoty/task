@@ -8,7 +8,6 @@ import { depDelete } from "../commands/dep-delete";
 import { list } from "../commands/list";
 import { moveTask } from "../commands/move";
 import { next } from "../commands/next";
-import { serve } from "../commands/serve";
 import { updateTask } from "../commands/update";
 
 class ExitSignal {
@@ -88,6 +87,7 @@ export async function runCli(
     .command("serve", "Webサーバーを起動する")
     .option("--port <number>", "ポート番号", { default: 4979 })
     .action(async (options: { port: number } = { port: 4979 }) => {
+      const { serve } = await import("../commands/serve");
       serve(options.port, taskDir);
       // サーバーは起動し続けるため、永続的に待機する
       await new Promise<never>(() => {});
