@@ -32,7 +32,7 @@ function bubbleUp(id: number, index: Index, taskDir: string): void {
 
   const content = readFileSync(parentFile, "utf-8");
   const fields = parseFrontmatter(content);
-  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
   const body = bodyMatch ? bodyMatch[1] : "";
 
   if (allSiblingsDone && fields.status !== "done") {
@@ -54,7 +54,7 @@ function cascadeDone(id: number, index: Index, taskDir: string): void {
     if (existsSync(childFile)) {
       const content = readFileSync(childFile, "utf-8");
       const fields = parseFrontmatter(content);
-      const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+      const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
       const body = bodyMatch ? bodyMatch[1] : "";
       fields.status = "done";
       writeFileSync(childFile, serializeFrontmatter(fields, body));
@@ -87,7 +87,7 @@ export async function updateTask(
   const content = readFileSync(taskFile, "utf-8");
   const fields = parseFrontmatter(content);
 
-  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
   const body = bodyMatch ? bodyMatch[1] : "";
 
   for (const [key, value] of Object.entries(updates)) {

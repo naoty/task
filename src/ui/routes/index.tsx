@@ -12,6 +12,87 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { buildNodes, type GraphData } from "../build-nodes";
 import { RichEditor } from "../components/RichEditor";
 
+const STATUSES = ["todo", "doing", "done"] as const;
+
+const statusBorderColor: Record<string, string> = {
+  todo: "var(--color-status-todo)",
+  doing: "var(--color-status-doing)",
+  done: "var(--color-status-done)",
+};
+
+function StatusSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (status: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const color = statusBorderColor[value] ?? statusBorderColor.todo;
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1 -ml-2 px-2 py-0.5 rounded text-[11px] font-semibold uppercase hover:bg-surface transition-colors"
+        style={{ color }}
+      >
+        {value}
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden="true"
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M2 3.5L5 6.5L8 3.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-10 min-w-[96px] rounded-md border border-border-elevated bg-surface-elevated shadow-lg overflow-hidden">
+          {STATUSES.map((s) => {
+            const c = statusBorderColor[s];
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  onChange(s);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center px-3 py-1.5 text-[11px] font-semibold uppercase transition-colors hover:bg-surface ${value === s ? "bg-surface" : ""}`}
+                style={{ color: c }}
+              >
+                {s}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type TaskNodeData = {
   id: string;
   title: string;
@@ -28,12 +109,6 @@ type TaskDetail = {
 };
 
 const EXCLUDED_FIELDS = new Set(["id", "path", "title", "status", "body"]);
-
-const statusBorderColor: Record<string, string> = {
-  todo: "var(--color-status-todo)",
-  doing: "var(--color-status-doing)",
-  done: "var(--color-status-done)",
-};
 
 function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
   const borderColor = statusBorderColor[data.status] ?? statusBorderColor.todo;
@@ -167,9 +242,6 @@ export function IndexRoute() {
     return () => document.removeEventListener("keydown", handler);
   }, [closeModal]);
 
-  const borderColor =
-    statusBorderColor[selectedTask?.status ?? ""] ?? statusBorderColor.todo;
-
   const saveBody = useCallback(
     (body: string) => {
       if (!selectedTask) return;
@@ -178,6 +250,20 @@ export function IndexRoute() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body }),
       });
+    },
+    [selectedTask],
+  );
+
+  const saveStatus = useCallback(
+    (status: string) => {
+      if (!selectedTask) return;
+      fetch(`/api/tasks/${selectedTask.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+        .then((r) => r.json())
+        .then((data: TaskDetail) => setSelectedTask(data));
     },
     [selectedTask],
   );
@@ -238,12 +324,9 @@ export function IndexRoute() {
             <span className="text-base font-medium text-text break-words">
               {selectedTask?.title}
             </span>
-            <span
-              className="text-xs font-semibold uppercase"
-              style={{ color: borderColor }}
-            >
-              {selectedTask?.status}
-            </span>
+            {selectedTask && (
+              <StatusSelect value={selectedTask.status} onChange={saveStatus} />
+            )}
             {selectedTask &&
               (() => {
                 const extraFields = Object.entries(selectedTask).filter(

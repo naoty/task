@@ -23,7 +23,7 @@ function revertDoneAncestors(
   const fields = parseFrontmatter(content);
   if (fields.status !== "done") return;
 
-  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
   const body = bodyMatch ? bodyMatch[1] : "";
   fields.status = "doing";
   writeFileSync(parentFile, serializeFrontmatter(fields, body));
