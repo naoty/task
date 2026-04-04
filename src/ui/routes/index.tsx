@@ -171,6 +171,66 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
   );
 }
 
+function TitleEditor({
+  value,
+  onSave,
+}: {
+  value: string;
+  onSave: (title: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const commit = useCallback(() => {
+    setEditing(false);
+    onSave(draft);
+  }, [draft, onSave]);
+
+  const cancel = useCallback(() => {
+    setEditing(false);
+    setDraft(value);
+  }, [value]);
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") cancel();
+        }}
+        className="text-base font-medium text-text bg-transparent border-b border-border outline-none w-full"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="text-base font-medium text-text break-words text-left hover:opacity-70 transition-opacity cursor-text"
+    >
+      {value}
+    </button>
+  );
+}
+
 const nodeTypes = { task: TaskNode, group: GroupNode };
 
 export function IndexRoute() {
@@ -268,6 +328,20 @@ export function IndexRoute() {
     [selectedTask],
   );
 
+  const saveTitle = useCallback(
+    (title: string) => {
+      if (!selectedTask || title === selectedTask.title) return;
+      fetch(`/api/tasks/${selectedTask.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      })
+        .then((r) => r.json())
+        .then((data: TaskDetail) => setSelectedTask(data));
+    },
+    [selectedTask],
+  );
+
   const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
@@ -321,9 +395,13 @@ export function IndexRoute() {
         />
         <div className="flex items-start justify-between p-4 border-b border-border-elevated gap-3">
           <div className="flex flex-col gap-1.5 min-w-0">
-            <span className="text-base font-medium text-text break-words">
-              {selectedTask?.title}
-            </span>
+            {selectedTask && (
+              <TitleEditor
+                key={selectedTask.id}
+                value={selectedTask.title}
+                onSave={saveTitle}
+              />
+            )}
             {selectedTask && (
               <StatusSelect value={selectedTask.status} onChange={saveStatus} />
             )}

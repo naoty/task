@@ -74,12 +74,16 @@ function createFetch(
       if (!existsSync(filePath)) {
         return new Response("Not Found", { status: 404 });
       }
-      const { body, status } = (await req.json()) as {
+      const { body, status, title } = (await req.json()) as {
         body?: string;
         status?: string;
+        title?: string;
       };
       if (status !== undefined) {
         await updateTask(id, { status }, taskDir);
+      }
+      if (title !== undefined) {
+        await updateTask(id, { title }, taskDir);
       }
       if (body !== undefined) {
         const content = readFileSync(filePath, "utf-8");
