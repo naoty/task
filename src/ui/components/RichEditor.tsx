@@ -32,6 +32,7 @@ export function RichEditor({ content, onSave }: Props) {
   // 別タスクを選択したとき（contentが外部から変わったとき）に更新する
   useEffect(() => {
     if (!editor) return;
+    if (editor.getMarkdown() === content) return;
     editor.commands.setContent(content, {
       contentType: "markdown",
       emitUpdate: false,
