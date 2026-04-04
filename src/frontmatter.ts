@@ -13,7 +13,7 @@ export function parseFrontmatter(content: string): Record<string, string> {
 }
 
 export function extractBody(content: string): string {
-  const match = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const match = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
   return match ? match[1] : "";
 }
 
@@ -24,5 +24,5 @@ export function serializeFrontmatter(
   const fm = Object.entries(fields)
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
-  return `---\n${fm}\n---\n${body}`;
+  return `---\n${fm}\n---\n\n${body}`;
 }
