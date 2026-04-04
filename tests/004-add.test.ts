@@ -27,7 +27,7 @@ test("既存タスクのIDの最大値+1を新しいIDとする", async () => {
 test("作成されるファイルの内容がタスクファイル仕様に従う", async () => {
   await runCli(["add", "買い物をする"], taskDir());
   const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
-  expect(content).toBe("---\ntitle: 買い物をする\nstatus: todo\n---\n");
+  expect(content).toBe("---\ntitle: 買い物をする\nstatus: todo\n---\n\n");
 });
 
 test("TASK_DIRが存在しない場合は自動的に作成する", async () => {
@@ -98,13 +98,13 @@ test("--parent でアーカイブ済みタスクのIDを指定するとエラー
 test("--body を指定するとfrontmatter以下に本文が書き込まれる", async () => {
   await runCli(["add", "タスク", "--body", "本文内容"], taskDir());
   const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
-  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n本文内容");
+  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n\n本文内容");
 });
 
 test("--body を指定しない場合はfrontmatter以下が空になる", async () => {
   await runCli(["add", "タスク"], taskDir());
   const content = readFileSync(resolve(taskDir(), "1.md"), "utf-8");
-  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n");
+  expect(content).toBe("---\ntitle: タスク\nstatus: todo\n---\n\n");
 });
 
 test("doneの親タスクにサブタスクを追加すると親タスクがdoingになる", async () => {
