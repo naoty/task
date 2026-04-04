@@ -35,6 +35,7 @@ export function createServer(
     try {
       const server = Bun.serve({
         port: port + i,
+        idleTimeout: 0,
         fetch: createFetch(taskDir, clients, encoder),
       });
       const originalStop = server.stop.bind(server);
