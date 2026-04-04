@@ -12,7 +12,7 @@ type Props = {
   onSave: (markdown: string) => void;
 };
 
-export function RichEditor({ content, onSave }: Props) {
+export default function RichEditor({ content, onSave }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
