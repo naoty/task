@@ -213,7 +213,10 @@ function TitleEditor({
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit();
-          if (e.key === "Escape") cancel();
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            cancel();
+          }
         }}
         className="text-base font-medium text-text bg-transparent border-b border-border outline-none w-full"
       />
