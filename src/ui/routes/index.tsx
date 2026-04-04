@@ -182,6 +182,20 @@ export function IndexRoute() {
     [selectedTask],
   );
 
+  const saveStatus = useCallback(
+    (status: string) => {
+      if (!selectedTask) return;
+      fetch(`/api/tasks/${selectedTask.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+        .then((r) => r.json())
+        .then((data: TaskDetail) => setSelectedTask(data));
+    },
+    [selectedTask],
+  );
+
   const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
@@ -238,12 +252,16 @@ export function IndexRoute() {
             <span className="text-base font-medium text-text break-words">
               {selectedTask?.title}
             </span>
-            <span
-              className="text-xs font-semibold uppercase"
+            <select
+              value={selectedTask?.status ?? "todo"}
+              onChange={(e) => saveStatus(e.target.value)}
+              className="text-xs font-semibold uppercase bg-transparent border-none cursor-pointer outline-none p-0 w-fit"
               style={{ color: borderColor }}
             >
-              {selectedTask?.status}
-            </span>
+              <option value="todo">todo</option>
+              <option value="doing">doing</option>
+              <option value="done">done</option>
+            </select>
             {selectedTask &&
               (() => {
                 const extraFields = Object.entries(selectedTask).filter(
