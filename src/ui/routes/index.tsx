@@ -46,13 +46,9 @@ function StatusSelect({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold uppercase hover:bg-surface transition-colors"
+        className="flex items-center gap-1 -ml-2 px-2 py-0.5 rounded text-[11px] font-semibold uppercase hover:bg-surface transition-colors"
         style={{ color }}
       >
-        <span
-          className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ backgroundColor: color }}
-        />
         {value}
         <svg
           width="10"
@@ -84,13 +80,9 @@ function StatusSelect({
                   onChange(s);
                   setOpen(false);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase transition-colors hover:bg-surface ${value === s ? "bg-surface" : ""}`}
+                className={`w-full flex items-center px-3 py-1.5 text-[11px] font-semibold uppercase transition-colors hover:bg-surface ${value === s ? "bg-surface" : ""}`}
                 style={{ color: c }}
               >
-                <span
-                  className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
-                  style={{ backgroundColor: c }}
-                />
                 {s}
               </button>
             );
