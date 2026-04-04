@@ -13,21 +13,12 @@ export default defineConfig({
   build: {
     outDir: "../../dist/ui",
     emptyOutDir: true,
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         entryFileNames: "[name].js",
         chunkFileNames: "[name].js",
         assetFileNames: "[name].[ext]",
-        manualChunks(id) {
-          if (id.includes("@xyflow/")) return "reactflow";
-          if (
-            id.includes("@tiptap/") ||
-            id.includes("lowlight") ||
-            id.includes("highlight.js")
-          )
-            return "tiptap";
-        },
       },
     },
   },

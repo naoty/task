@@ -8,17 +8,9 @@ import {
   Position,
   ReactFlow,
 } from "@xyflow/react";
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildNodes, type GraphData } from "../build-nodes";
-
-const RichEditor = lazy(() => import("../components/RichEditor"));
+import { RichEditor } from "../components/RichEditor";
 
 const STATUSES = ["todo", "doing", "done"] as const;
 
@@ -372,13 +364,11 @@ export function IndexRoute() {
           className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scroll-hide"
         >
           {selectedTask && (
-            <Suspense>
-              <RichEditor
-                key={selectedTask.id}
-                content={selectedTask.body ?? ""}
-                onSave={saveBody}
-              />
-            </Suspense>
+            <RichEditor
+              key={selectedTask.id}
+              content={selectedTask.body ?? ""}
+              onSave={saveBody}
+            />
           )}
         </div>
 
