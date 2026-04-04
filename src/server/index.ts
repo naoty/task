@@ -5,6 +5,7 @@ import indexHtml from "../../dist/ui/index.html" with { type: "text" };
 import indexJs from "../../dist/ui/index.js" with { type: "text" };
 import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
+import { updateTask } from "../commands/update";
 import {
   extractBody,
   parseFrontmatter,
@@ -72,12 +73,22 @@ function createFetch(
       if (!existsSync(filePath)) {
         return new Response("Not Found", { status: 404 });
       }
-      const { body } = (await req.json()) as { body: string };
-      const content = readFileSync(filePath, "utf-8");
-      const fields = parseFrontmatter(content);
-      writeFileSync(filePath, serializeFrontmatter(fields, body));
+      const { body, status } = (await req.json()) as {
+        body?: string;
+        status?: string;
+      };
+      if (status !== undefined) {
+        await updateTask(id, { status }, taskDir);
+      }
+      if (body !== undefined) {
+        const content = readFileSync(filePath, "utf-8");
+        const fields = parseFrontmatter(content);
+        writeFileSync(filePath, serializeFrontmatter(fields, body));
+      }
       const task = readTask(id, taskDir);
-      return new Response(JSON.stringify({ ...task, body }), {
+      const content = readFileSync(filePath, "utf-8");
+      const currentBody = extractBody(content);
+      return new Response(JSON.stringify({ ...task, body: currentBody }), {
         headers: { "Content-Type": "application/json" },
       });
     }
