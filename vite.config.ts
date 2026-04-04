@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     outDir: "../../dist/ui",
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         entryFileNames: "[name].js",
