@@ -1,12 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
+import {
+  extractBody,
+  parseFrontmatter,
+  serializeFrontmatter,
+} from "../frontmatter";
 import type { Index } from "../index-file";
 import { getParentKey, readIndex } from "../index-file";
 import type { Task } from "../task";
-import { readTask } from "../task";
-
-const VALID_STATUSES = ["todo", "doing", "done"];
+import { readTask, STATUSES } from "../task";
 
 const FORBIDDEN_FIELDS: Record<string, string> = {
   parent: 'cannot update "parent": use "task move --parent <id>"',
@@ -32,8 +34,7 @@ function bubbleUp(id: number, index: Index, taskDir: string): void {
 
   const content = readFileSync(parentFile, "utf-8");
   const fields = parseFrontmatter(content);
-  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
-  const body = bodyMatch ? bodyMatch[1] : "";
+  const body = extractBody(content);
 
   if (allSiblingsDone && fields.status !== "done") {
     fields.status = "done";
@@ -54,8 +55,7 @@ function cascadeDone(id: number, index: Index, taskDir: string): void {
     if (existsSync(childFile)) {
       const content = readFileSync(childFile, "utf-8");
       const fields = parseFrontmatter(content);
-      const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
-      const body = bodyMatch ? bodyMatch[1] : "";
+      const body = extractBody(content);
       fields.status = "done";
       writeFileSync(childFile, serializeFrontmatter(fields, body));
     }
@@ -79,16 +79,17 @@ export async function updateTask(
   }
 
   for (const [field, value] of Object.entries(updates)) {
-    if (field === "status" && !VALID_STATUSES.includes(value)) {
+    if (
+      field === "status" &&
+      !STATUSES.includes(value as (typeof STATUSES)[number])
+    ) {
       throw new Error(`invalid status: ${value}`);
     }
   }
 
   const content = readFileSync(taskFile, "utf-8");
   const fields = parseFrontmatter(content);
-
-  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n\n?([\s\S]*)$/);
-  const body = bodyMatch ? bodyMatch[1] : "";
+  const body = extractBody(content);
 
   for (const [key, value] of Object.entries(updates)) {
     fields[key] = value;

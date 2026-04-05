@@ -1,8 +1,5 @@
 import { existsSync, readFileSync, watch, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import indexCss from "../../dist/ui/index.css" with { type: "text" };
-import indexHtml from "../../dist/ui/index.html" with { type: "text" };
-import indexJs from "../../dist/ui/index.js" with { type: "text" };
 import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
 import { updateTask } from "../commands/update";
@@ -13,12 +10,28 @@ import {
 } from "../frontmatter";
 import { readTask } from "../task";
 
+const DIST_DIR = resolve(import.meta.dir, "../../dist/ui");
+const FALLBACK_HTML = `<!doctype html><html><head></head><body><div id="root"></div></body></html>`;
+
+function loadStaticAssets() {
+  const load = (file: string, fallback: string) => {
+    const path = resolve(DIST_DIR, file);
+    return existsSync(path) ? readFileSync(path, "utf-8") : fallback;
+  };
+  return {
+    html: load("index.html", FALLBACK_HTML),
+    js: load("index.js", ""),
+    css: load("index.css", ""),
+  };
+}
+
 export function createServer(
   port: number,
   taskDir: string,
 ): ReturnType<typeof Bun.serve> {
   const clients = new Set<ReadableStreamDefaultController<Uint8Array>>();
   const encoder = new TextEncoder();
+  const assets = loadStaticAssets();
 
   const watcher = watch(taskDir, () => {
     const data = encoder.encode("data: change\n\n");
@@ -36,7 +49,7 @@ export function createServer(
       const server = Bun.serve({
         port: port + i,
         idleTimeout: 0,
-        fetch: createFetch(taskDir, clients, encoder),
+        fetch: createFetch(taskDir, clients, encoder, assets),
       });
       const originalStop = server.stop.bind(server);
       server.stop = (...args: Parameters<typeof server.stop>) => {
@@ -63,6 +76,7 @@ function createFetch(
   taskDir: string,
   clients: Set<ReadableStreamDefaultController<Uint8Array>>,
   encoder: TextEncoder,
+  assets: ReturnType<typeof loadStaticAssets>,
 ) {
   return async function fetch(req: Request): Promise<Response> {
     const url = new URL(req.url);
@@ -152,18 +166,18 @@ function createFetch(
     }
 
     if (url.pathname === "/index.js") {
-      return new Response(indexJs, {
+      return new Response(assets.js, {
         headers: { "Content-Type": "application/javascript" },
       });
     }
 
     if (url.pathname === "/index.css") {
-      return new Response(indexCss, {
+      return new Response(assets.css, {
         headers: { "Content-Type": "text/css" },
       });
     }
 
-    return new Response(indexHtml, {
+    return new Response(assets.html, {
       headers: { "Content-Type": "text/html" },
     });
   };
