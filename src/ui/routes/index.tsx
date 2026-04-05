@@ -10,8 +10,9 @@ import {
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STATUSES } from "../../task";
-import { buildNodes, type GraphData } from "../build-nodes";
 import { RichEditor } from "../components/RichEditor";
+import { usePanel } from "../hooks/usePanel";
+import { useTaskGraph } from "../hooks/useTaskGraph";
 
 const statusBorderColor: Record<string, string> = {
   todo: "var(--color-status-todo)",
@@ -233,13 +234,9 @@ function TitleEditor({
 const nodeTypes = { task: TaskNode, group: GroupNode };
 
 export function IndexRoute() {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState(
-    [] as ReturnType<typeof buildNodes>["edges"],
-  );
-  const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
-  const [panelWidth, setPanelWidth] = useState(480);
-  const isResizing = useRef(false);
+  const { nodes, edges, selectedTask, setSelectedTask, fetchTask } =
+    useTaskGraph();
+  const { panelWidth, onResizeMouseDown } = usePanel();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -253,37 +250,6 @@ export function IndexRoute() {
     }, 1000);
   }, []);
 
-  const fetchGraph = useCallback(() => {
-    fetch("/api/graph")
-      .then((r) => r.json())
-      .then((data: GraphData) => {
-        const { nodes: n, edges: e } = buildNodes(data);
-        setNodes(n);
-        setEdges(e);
-      });
-  }, []);
-
-  useEffect(() => {
-    fetchGraph();
-  }, [fetchGraph]);
-
-  const fetchTask = useCallback((id: number) => {
-    fetch(`/api/tasks/${id}`)
-      .then((r) => r.json())
-      .then((data: TaskDetail) => setSelectedTask(data));
-  }, []);
-
-  useEffect(() => {
-    const es = new EventSource("/api/events");
-    es.onmessage = () => {
-      fetchGraph();
-      if (selectedTask) {
-        fetchTask(selectedTask.id);
-      }
-    };
-    return () => es.close();
-  }, [fetchGraph, fetchTask, selectedTask]);
-
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
       fetchTask(Number(node.id));
@@ -291,7 +257,10 @@ export function IndexRoute() {
     [fetchTask],
   );
 
-  const closeModal = useCallback(() => setSelectedTask(null), []);
+  const closeModal = useCallback(
+    () => setSelectedTask(null),
+    [setSelectedTask],
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -324,7 +293,7 @@ export function IndexRoute() {
         .then((r) => r.json())
         .then((data: TaskDetail) => setSelectedTask(data));
     },
-    [selectedTask],
+    [selectedTask, setSelectedTask],
   );
 
   const saveTitle = useCallback(
@@ -338,28 +307,8 @@ export function IndexRoute() {
         .then((r) => r.json())
         .then((data: TaskDetail) => setSelectedTask(data));
     },
-    [selectedTask],
+    [selectedTask, setSelectedTask],
   );
-
-  const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    const onMouseMove = (ev: MouseEvent) => {
-      if (!isResizing.current) return;
-      const newWidth = Math.min(
-        Math.max(window.innerWidth - ev.clientX, 280),
-        window.innerWidth * 0.8,
-      );
-      setPanelWidth(newWidth);
-    };
-    const onMouseUp = () => {
-      isResizing.current = false;
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  }, []);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
