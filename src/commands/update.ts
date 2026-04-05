@@ -4,9 +4,7 @@ import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
 import type { Index } from "../index-file";
 import { getParentKey, readIndex } from "../index-file";
 import type { Task } from "../task";
-import { readTask } from "../task";
-
-const VALID_STATUSES = ["todo", "doing", "done"];
+import { readTask, STATUSES } from "../task";
 
 const FORBIDDEN_FIELDS: Record<string, string> = {
   parent: 'cannot update "parent": use "task move --parent <id>"',
@@ -79,7 +77,10 @@ export async function updateTask(
   }
 
   for (const [field, value] of Object.entries(updates)) {
-    if (field === "status" && !VALID_STATUSES.includes(value)) {
+    if (
+      field === "status" &&
+      !STATUSES.includes(value as (typeof STATUSES)[number])
+    ) {
       throw new Error(`invalid status: ${value}`);
     }
   }

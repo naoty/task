@@ -9,10 +9,9 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { STATUSES } from "../../task";
 import { buildNodes, type GraphData } from "../build-nodes";
 import { RichEditor } from "../components/RichEditor";
-
-const STATUSES = ["todo", "doing", "done"] as const;
 
 const statusBorderColor: Record<string, string> = {
   todo: "var(--color-status-todo)",
