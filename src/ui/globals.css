@@ -111,6 +111,10 @@
   margin: 0.2rem 0;
 }
 
+.ProseMirror li > p {
+  margin-bottom: 0;
+}
+
 .ProseMirror li > ul,
 .ProseMirror li > ol {
   margin: 0.2rem 0 0;
