@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, watch, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
 import { updateTask } from "../commands/update";
@@ -10,7 +10,11 @@ import {
 } from "../frontmatter";
 import { readTask } from "../task";
 
-const DIST_DIR = resolve(import.meta.dir, "../../dist/ui");
+// コンパイル済みバイナリでは import.meta.dir が /$bunfs/root（仮想FS）になるため、
+// process.execPath からバイナリの実際の場所を取得する
+const DIST_DIR = import.meta.path.startsWith("/$bunfs/")
+  ? resolve(dirname(process.execPath), "../dist/ui")
+  : resolve(import.meta.dir, "../../dist/ui");
 const FALLBACK_HTML = `<!doctype html><html><head></head><body><div id="root"></div></body></html>`;
 
 function loadStaticAssets() {
