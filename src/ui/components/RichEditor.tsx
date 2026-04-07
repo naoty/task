@@ -17,7 +17,10 @@ export function RichEditor({ content, onSave }: Props) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ codeBlock: false }),
+      StarterKit.configure({
+        codeBlock: false,
+        link: { autolink: true, openOnClick: true },
+      }),
       CodeBlockLowlight.configure({ lowlight }),
       Markdown,
     ],
