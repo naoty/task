@@ -1,4 +1,10 @@
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -22,6 +28,10 @@ export function RichEditor({ content, onSave }: Props) {
         link: { autolink: true, openOnClick: true },
       }),
       CodeBlockLowlight.configure({ lowlight }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Markdown,
     ],
     content,
