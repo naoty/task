@@ -188,6 +188,10 @@
   color: var(--color-muted);
 }
 
+.ProseMirror a {
+  cursor: pointer;
+}
+
 /* Table styles */
 .ProseMirror table {
   border-collapse: collapse;
@@ -271,6 +275,7 @@
   a {
     color: var(--color-accent);
     text-decoration: none;
+    cursor: pointer;
   }
 
   a:hover {
