@@ -9,10 +9,11 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { STATUSES } from "../../task";
 import { RichEditor } from "../components/RichEditor";
 import { usePanel } from "../hooks/usePanel";
 import { useTaskGraph } from "../hooks/useTaskGraph";
+
+const STATUSES = ["todo", "doing", "done"] as const;
 
 const statusBorderColor: Record<string, string> = {
   todo: "var(--color-status-todo)",

@@ -50,7 +50,7 @@
 }
 
 .ProseMirror p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
 }
 
 .ProseMirror p:last-child {
@@ -60,25 +60,21 @@
 .ProseMirror h1 {
   font-size: 1rem;
   font-weight: 500;
-  margin: 1.25rem 0 0.375rem;
+  margin: 0 0 1rem;
   color: var(--color-text);
-}
-
-.ProseMirror h1:first-child {
-  margin-top: 0;
 }
 
 .ProseMirror h2 {
   font-size: 0.9375rem;
   font-weight: 500;
-  margin: 1rem 0 0.375rem;
+  margin: 0 0 1rem;
   color: var(--color-text);
 }
 
 .ProseMirror h3 {
   font-size: 0.875rem;
   font-weight: 500;
-  margin: 0.75rem 0 0.25rem;
+  margin: 0 0 1rem;
   color: var(--color-text);
 }
 
@@ -98,26 +94,31 @@
 .ProseMirror ul {
   list-style-type: disc;
   padding-left: 1.25rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
 }
 
 .ProseMirror ol {
   list-style-type: decimal;
   padding-left: 1.25rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
 }
 
 .ProseMirror li {
-  margin: 0.2rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror li:last-child {
+  margin-bottom: 0;
 }
 
 .ProseMirror li > p {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .ProseMirror li > ul,
 .ProseMirror li > ol {
-  margin: 0.2rem 0 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .ProseMirror code {
@@ -135,7 +136,7 @@
   background-color: var(--color-surface);
   padding: 0.75rem 1rem;
   border-radius: 0.375rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   overflow-x: auto;
 }
 
@@ -191,8 +192,40 @@
 .ProseMirror blockquote {
   border-left: 3px solid var(--color-border-elevated);
   padding-left: 1rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   color: var(--color-muted);
+}
+
+.ProseMirror a {
+  cursor: pointer;
+}
+
+/* Table styles */
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  border: 1px solid var(--color-border-elevated);
+  padding: 0.375rem 0.625rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.ProseMirror th {
+  font-weight: 600;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.ProseMirror td > p,
+.ProseMirror th > p {
+  margin: 0;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
@@ -251,6 +284,7 @@
   a {
     color: var(--color-accent);
     text-decoration: none;
+    cursor: pointer;
   }
 
   a:hover {
