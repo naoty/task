@@ -206,6 +206,7 @@
   width: 100%;
   table-layout: fixed;
   overflow: hidden;
+  margin-bottom: 1rem;
 }
 
 .ProseMirror th,
