@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, watch, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import { buildGraph } from "../commands/graph";
 import { list } from "../commands/list";
 import { updateTask } from "../commands/update";
@@ -9,23 +9,21 @@ import {
   serializeFrontmatter,
 } from "../frontmatter";
 import { readTask } from "../task";
+import { embeddedCss, embeddedHtml, embeddedJs } from "./ui-assets";
 
-// コンパイル済みバイナリでは import.meta.dir が /$bunfs/root（仮想FS）になるため、
-// process.execPath からバイナリの実際の場所を取得する
-const DIST_DIR = import.meta.path.startsWith("/$bunfs/")
-  ? resolve(dirname(process.execPath), "../dist/ui")
-  : resolve(import.meta.dir, "../../dist/ui");
+const DIST_DIR = resolve(import.meta.dir, "../../dist/ui");
 const FALLBACK_HTML = `<!doctype html><html><head></head><body><div id="root"></div></body></html>`;
 
 function loadStaticAssets() {
-  const load = (file: string, fallback: string) => {
+  const load = (file: string, embedded: string, fallback: string) => {
     const path = resolve(DIST_DIR, file);
-    return existsSync(path) ? readFileSync(path, "utf-8") : fallback;
+    if (existsSync(path)) return readFileSync(path, "utf-8");
+    return embedded || fallback;
   };
   return {
-    html: load("index.html", FALLBACK_HTML),
-    js: load("index.js", ""),
-    css: load("index.css", ""),
+    html: load("index.html", embeddedHtml, FALLBACK_HTML),
+    js: load("index.js", embeddedJs, ""),
+    css: load("index.css", embeddedCss, ""),
   };
 }
 

@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "build:ui": "vite build",
+    "embed:ui": "bun scripts/embed-ui.ts",
     "build:bin": "bun build --compile src/cli/index.ts --outfile build/task && bun build --compile --target=bun-linux-x64 src/cli/index.ts --outfile build/task-linux-x64 && bun build --compile --target=bun-linux-arm64 src/cli/index.ts --outfile build/task-linux-arm64 && bun build --compile --target=bun-darwin-x64 src/cli/index.ts --outfile build/task-darwin-x64 && bun build --compile --target=bun-darwin-arm64 src/cli/index.ts --outfile build/task-darwin-arm64",
-    "build": "bun run build:ui && bun run build:bin",
+    "build": "bun run build:ui && bun run embed:ui && bun run build:bin",
     "dev": "vite",
     "test": "bun test",
     "check": "biome check",
