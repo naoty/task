@@ -1,7 +1,13 @@
-import { afterEach, expect, test } from "bun:test";
+import { afterEach, expect, mock, test } from "bun:test";
 import { runCli } from "../src/cli/run";
 import { createServer } from "../src/server/index";
 import { useTempTaskDir } from "./helpers";
+
+mock.module("../src/server/static-assets", () => ({
+  html: `<!doctype html><html><head></head><body><div id="root"></div></body></html>`,
+  js: "",
+  css: "",
+}));
 
 let server: ReturnType<typeof createServer> | null = null;
 

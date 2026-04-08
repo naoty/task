@@ -9,22 +9,10 @@ import {
   serializeFrontmatter,
 } from "../frontmatter";
 import { readTask } from "../task";
-import { embeddedCss, embeddedHtml, embeddedJs } from "./ui-assets";
-
-const DIST_DIR = resolve(import.meta.dir, "../../dist/ui");
-const FALLBACK_HTML = `<!doctype html><html><head></head><body><div id="root"></div></body></html>`;
+import { css, html, js } from "./static-assets";
 
 function loadStaticAssets() {
-  const load = (file: string, embedded: string, fallback: string) => {
-    const path = resolve(DIST_DIR, file);
-    if (existsSync(path)) return readFileSync(path, "utf-8");
-    return embedded || fallback;
-  };
-  return {
-    html: load("index.html", embeddedHtml, FALLBACK_HTML),
-    js: load("index.js", embeddedJs, ""),
-    css: load("index.css", embeddedCss, ""),
-  };
+  return { html, js, css };
 }
 
 export function createServer(

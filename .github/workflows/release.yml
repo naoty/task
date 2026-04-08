@@ -45,7 +45,7 @@ jobs:
         run: bun install
 
       - name: Build UI
-        run: bun run build:ui && bun run embed:ui
+        run: bun run build:ui
 
       - name: Build
         run: |
@@ -73,7 +73,7 @@ jobs:
         run: bun install
 
       - name: Build UI
-        run: bun run build:ui && bun run embed:ui
+        run: bun run build:ui
 
       - name: Build
         run: |
