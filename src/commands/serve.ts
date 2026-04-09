@@ -1,6 +1,10 @@
+import open from "open";
 import { createServer } from "../server/index";
 
-export function serve(port: number, taskDir: string): void {
+export async function serve(port: number, taskDir: string): Promise<void> {
   const server = createServer(port, taskDir);
-  console.log(`Listening on http://localhost:${server.port}`);
+  const url = `http://localhost:${server.port}`;
+  console.log(`🚀 Listening on ${url}`);
+  console.log(`🌐 Opening browser...`);
+  await open(url);
 }
