@@ -120,7 +120,7 @@ function TaskNode({ data }: NodeProps<Node<TaskNodeData>>) {
         style={{ borderColor }}
         className="w-[160px] rounded-[0.5rem] bg-surface border-2 p-3 flex flex-col gap-1 relative cursor-pointer"
       >
-        <span className="text-xs font-medium text-text truncate">
+        <span className="text-2xs font-medium text-text line-clamp-2">
           {data.title}
         </span>
         <span
@@ -153,7 +153,7 @@ function GroupNode({ data }: NodeProps<Node<TaskNodeData>>) {
         className="rounded-[0.5rem] border-2 bg-surface flex flex-col relative cursor-pointer"
       >
         <div className="w-full p-3 flex flex-col gap-1">
-          <span className="text-xs font-medium text-text truncate">
+          <span className="text-2xs font-medium text-text line-clamp-2">
             {data.title}
           </span>
           <span

@@ -15,11 +15,11 @@ export type GraphData = {
 };
 
 export const NODE_WIDTH = 160;
-export const NODE_HEIGHT = 60;
+export const NODE_HEIGHT = 76;
 export const CHILD_WIDTH = 160;
-export const CHILD_HEIGHT = 64;
+export const CHILD_HEIGHT = 80;
 export const GROUP_PADDING = 20;
-export const GROUP_HEADER = 56;
+export const GROUP_HEADER = 72;
 export const CHILD_GAP_H = 60;
 export const GAP_V = 12;
 
